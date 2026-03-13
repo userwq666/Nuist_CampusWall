@@ -1,26 +1,20 @@
 package com.nuist_campuswall.domain.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum Role {
     // 管理员
-    ADMIN("admin", 1),
+    ADMIN(1, "admin"),
     // 普通用户
-    USER("user", 0);
+    USER(0, "user");
 
+    // 入库值（对应 role 字段）
+    @EnumValue
+    private final Integer code;
     // 角色文本标识
     private final String label;
-    // 角色数值编码（可用于数据库存储）
-    private final int code;
-
-    Role(String label, int code) {
-        this.label = label;
-        this.code = code;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public int getCode() {
-        return code;
-    }
 }

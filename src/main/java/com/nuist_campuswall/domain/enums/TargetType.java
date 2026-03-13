@@ -6,13 +6,13 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum PostStatus {
-    // 正常展示
-    ENABLE(1, "enable"),
-    // 下架/隐藏
-    DISABLE(0, "disable");
+public enum TargetType {
+    // 帖子点赞目标
+    POST(1, "post"),
+    // 评论点赞目标
+    COMMENT(2, "comment");
 
-    // 入库值（对应 post.status 字段）
+    // 入库值（对应 like.target_type 字段）
     @EnumValue
     private final Integer code;
     // 文本标识

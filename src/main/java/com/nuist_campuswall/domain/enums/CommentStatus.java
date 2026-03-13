@@ -1,27 +1,20 @@
 package com.nuist_campuswall.domain.enums;
 
-// 评论状态枚举
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum CommentStatus {
     // 可见
-    ENABLE("enable",1),
+    ENABLE(1, "enable"),
     // 不可见
-    DISABLE("disable",0);
+    DISABLE(0, "disable");
 
-    // 状态文本标识
+    // 入库值（对应 comment.status 字段）
+    @EnumValue
+    private final Integer code;
+    // 文本标识
     private final String label;
-    // 状态数值编码（可用于数据库存储）
-    private final int code;
-
-    CommentStatus(String label, int code) {
-        this.label = label;
-        this.code = code;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public int getCode() {
-        return code;
-    }
 }

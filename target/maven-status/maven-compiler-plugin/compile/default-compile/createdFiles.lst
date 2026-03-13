@@ -1,7 +1,9 @@
 com\nuist_campuswall\domain\enums\Role.class
 com\nuist_campuswall\domain\user\User.class
-com\nuist_campuswall\domain\like\UserLike.class
+com\nuist_campuswall\domain\like\Like.class
+com\nuist_campuswall\mapper\user\UserMapper.class
 com\nuist_campuswall\domain\comment\Comment.class
+com\nuist_campuswall\domain\enums\TargetType.class
 com\nuist_campuswall\NuistCampusWallApplication.class
 com\nuist_campuswall\domain\enums\CommentStatus.class
 com\nuist_campuswall\domain\enums\PostStatus.class

@@ -1,0 +1,13 @@
+@host = http://localhost:8080
+@base = {{host}}/api
+
+### 测试 注册
+POST {{base}}/account/register
+Content-Type: application/json
+
+{
+  "username": "test01",
+  "password": "123456",
+  "nickname": "测试用户",
+  "educationEmail": "test01@nuist.edu.cn"
+}

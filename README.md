@@ -12,6 +12,7 @@
 - **开发语言**: Java 17
 - **核心框架**: Spring Boot 4.0.3
 - **数据库**: MySQL
+- **ORM 框架**: MyBatis-Plus
 - **其他依赖**: 
   - spring-boot-starter-webmvc
   - mysql-connector-java
@@ -41,15 +42,25 @@ java -jar Nuist_CampusWall.jar
 Nuist_CampusWall/
 ├── src/main/java/com/nuist_campuswall/
 │   ├── config/           # 配置类
+│   ├── controller/       # 控制器层
+│   │   └── account/     # 账户模块
+│   ├── service/          # 服务层
+│   │   └── account/     # 账户服务
 │   ├── domain/           # 领域模型
+│   │   ├── enums/       # 枚举类型（集中管理）
 │   │   ├── post/        # 帖子模块
 │   │   ├── comment/     # 评论模块
-│   │   └── user/        # 用户模块
+│   │   ├── user/        # 用户模块
+│   │   └── like/        # 点赞模块
 │   └── NuistCampusWallApplication.java  # 主启动类
 ├── src/main/resources/
-│   ├── application.properties  # 配置文件
+│   ├── application.properties  # 配置文件（含中文注释）
 │   └── sql/                   # SQL 脚本
+│       ├── db_init.sql       # 数据库初始化脚本
+│       └── db_seed.sql       # 测试数据脚本
 └── doc/                     # 项目文档
+    ├── 需求说明.md
+    └── 开发日志.md
 ```
 
 ## 数据库设计
