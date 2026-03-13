@@ -10,17 +10,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comment {
-    // 评论主键ID
+    // 主键 ID
     private Long id;
-    // 评论用户ID（关联 User.id）
+    // 评论作者 ID（关联 user.id）
     private Long userId;
-    // 所属帖子ID（关联 Post.id）
+    // 目标帖子 ID（关联 post.id）
     private Long postId;
-    // 评论正文
+    // 被回复的评论 ID，为空表示顶层评论
+    private Long replyToCommentId;
+    // 被回复的用户 ID
+    private Long replyToUserId;
+    // 评论内容
     private String content;
-    // 评论图片URL（可选）
+    // 可选的图片 URL
     private String imageUrl;
-    // 评论状态：启用/禁用
+    // 评论状态
     private CommentStatus status;
     // 创建时间
     private LocalDateTime createTime;

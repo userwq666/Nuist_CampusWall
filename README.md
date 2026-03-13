@@ -14,7 +14,7 @@
 - **数据库**: MySQL
 - **其他依赖**: 
   - spring-boot-starter-webmvc
-  - mysql-connector-j
+  - mysql-connector-java
   - Lombok
   - spring-boot-devtools
 

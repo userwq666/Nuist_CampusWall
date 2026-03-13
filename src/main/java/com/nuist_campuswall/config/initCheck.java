@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 
-@Component             // 表示该类被Spring管理
+@Component             // 表示该类被 Spring 管理，实现应用启动时的初始化检查
 @AllArgsConstructor
 public class initCheck implements ApplicationRunner {
     private final JdbcTemplate jdbcTemplate;
