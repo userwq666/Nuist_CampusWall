@@ -52,6 +52,12 @@ Nuist_CampusWall/
 └── doc/                     # 项目文档
 ```
 
+## 数据库设计
+
+- **数据库 ER 图（Visio）**: [`src/main/resources/sql/数据库 ER 图.vsdx`](src/main/resources/sql/数据库 ER 图.vsdx)
+- **数据库初始化脚本**: [`src/main/resources/sql/db_init.sql`](src/main/resources/sql/db_init.sql)
+- **测试数据脚本**: [`src/main/resources/sql/db_seed.sql`](src/main/resources/sql/db_seed.sql)
+
 ## 开发日志
 
 详见 [开发日志](doc/开发日志.md)
