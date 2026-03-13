@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `post` (
     `content` TEXT NOT NULL COMMENT '内容',
     `image_url` VARCHAR(255) DEFAULT NULL COMMENT '图片 URL',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1 显示，0 隐藏',
+    `like_count` INT NOT NULL DEFAULT 0 COMMENT '点赞数',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     KEY `idx_post_user_id` (`user_id`),
@@ -40,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `comment` (
     `content` VARCHAR(500) NOT NULL COMMENT '评论内容',
     `image_url` VARCHAR(255) DEFAULT NULL COMMENT '图片 URL',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1 显示，0 隐藏',
+    `like_count` INT NOT NULL DEFAULT 0 COMMENT '点赞数',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     KEY `idx_comment_user_id` (`user_id`),
     KEY `idx_comment_post_id` (`post_id`),
@@ -56,3 +58,17 @@ CREATE TABLE IF NOT EXISTS `comment` (
     CONSTRAINT `ck_comment_reply_pair` CHECK ((`reply_to_comment_id` IS NULL AND `reply_to_user_id` IS NULL)
                 OR (`reply_to_comment_id` IS NOT NULL AND `reply_to_user_id` IS NOT NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='评论表';
+
+
+-- 用户点赞表
+CREATE TABLE IF NOT EXISTS `user_like` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '点赞记录ID',
+    `user_id` BIGINT NOT NULL COMMENT '点赞用户ID',
+    `target_type` TINYINT NOT NULL COMMENT '点赞目标类型:1帖子,2评论',
+    `target_id` BIGINT NOT NULL COMMENT '目标ID',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    UNIQUE KEY `uk_user_target` (`user_id`, `target_type`, `target_id`),
+    KEY `idx_target` (`target_type`, `target_id`),
+    -- 外键：点赞用户关联用户表
+    CONSTRAINT `fk_user_like_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='点赞记录表';

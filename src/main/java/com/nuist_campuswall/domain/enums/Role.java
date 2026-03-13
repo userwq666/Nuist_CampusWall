@@ -1,4 +1,4 @@
-package com.nuist_campuswall.domain.user;
+package com.nuist_campuswall.domain.enums;
 
 public enum Role {
     // 管理员

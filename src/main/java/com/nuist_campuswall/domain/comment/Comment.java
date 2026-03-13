@@ -1,5 +1,6 @@
 package com.nuist_campuswall.domain.comment;
 
+import com.nuist_campuswall.domain.enums.CommentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,8 @@ public class Comment {
     private String imageUrl;
     // 评论状态
     private CommentStatus status;
+    //点赞数量
+    private Integer likeCount;
     // 创建时间
     private LocalDateTime createTime;
 }

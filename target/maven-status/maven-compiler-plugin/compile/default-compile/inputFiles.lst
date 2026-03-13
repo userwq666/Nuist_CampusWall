@@ -1,9 +1,10 @@
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\config\initCheck.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\comment\Comment.java
-C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\comment\CommentStatus.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\enums\CommentStatus.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\enums\PostStatus.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\enums\Role.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\enums\UserStatus.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\like\UserLike.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\post\Post.java
-C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\post\PostStatus.java
-C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\user\Role.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\user\User.java
-C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\domain\user\UserStatus.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\NuistCampusWallApplication.java

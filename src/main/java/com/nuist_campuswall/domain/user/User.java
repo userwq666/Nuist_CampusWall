@@ -1,5 +1,7 @@
 package com.nuist_campuswall.domain.user;
 
+import com.nuist_campuswall.domain.enums.Role;
+import com.nuist_campuswall.domain.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,9 @@
-com\nuist_campuswall\NuistCampusWallApplication.class
-com\nuist_campuswall\domain\user\UserStatus.class
-com\nuist_campuswall\domain\post\PostStatus.class
-com\nuist_campuswall\domain\comment\CommentStatus.class
-com\nuist_campuswall\domain\post\Post.class
-com\nuist_campuswall\domain\user\Role.class
+com\nuist_campuswall\domain\enums\Role.class
 com\nuist_campuswall\domain\user\User.class
+com\nuist_campuswall\domain\like\UserLike.class
 com\nuist_campuswall\domain\comment\Comment.class
+com\nuist_campuswall\NuistCampusWallApplication.class
+com\nuist_campuswall\domain\enums\CommentStatus.class
+com\nuist_campuswall\domain\enums\PostStatus.class
+com\nuist_campuswall\domain\enums\UserStatus.class
+com\nuist_campuswall\domain\post\Post.class
