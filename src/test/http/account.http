@@ -1,15 +1,35 @@
 @host = http://localhost:8080
 @base = {{host}}/api
 
-### 测试 注册
+### 1) 注册成功
 POST {{base}}/account/register
 Content-Type: application/json
 
 {
-  "username": "test01",
+  "username": "test1001",
   "password": "123456",
-  "nickname": "测试用户",
-  "educationEmail": "test01@nuist.edu.cn"
+  "nickname": "测试用户1001",
+  "educationEmail": "test1001@nuist.edu.cn"
 }
 
+### 2) 用户名重复（预期：业务异常）
+POST {{base}}/account/register
+Content-Type: application/json
 
+{
+  "username": "test1001",
+  "password": "123456",
+  "nickname": "测试用户1002",
+  "educationEmail": "test1002@nuist.edu.cn"
+}
+
+### 3) 邮箱重复（预期：业务异常）
+POST {{base}}/account/register
+Content-Type: application/json
+
+{
+  "username": "test1003",
+  "password": "123456",
+  "nickname": "测试用户1003",
+  "educationEmail": "test1001@nuist.edu.cn"
+}

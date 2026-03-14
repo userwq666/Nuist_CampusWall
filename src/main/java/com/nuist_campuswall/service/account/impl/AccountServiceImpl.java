@@ -1,6 +1,7 @@
 package com.nuist_campuswall.service.account.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.nuist_campuswall.common.BusinessException;
 import com.nuist_campuswall.domain.enums.Role;
 import com.nuist_campuswall.domain.enums.UserStatus;
 import com.nuist_campuswall.domain.user.User;
@@ -27,7 +28,7 @@ public class AccountServiceImpl implements AccountService {
                         .eq(User::getUsername, dto.getUsername())
         );
         if(usernameCount > 0){
-            throw new RuntimeException("用户名已存在");          // 抛出运行时异常
+            throw new BusinessException(4001,"用户名已存在");          // 抛出运行时异常
         }
 
         // 2. 检查邮箱是否已存在
@@ -36,7 +37,7 @@ public class AccountServiceImpl implements AccountService {
                         .eq(User::getEducationEmail, dto.getEducationEmail())
         );
         if(emailCount > 0){
-            throw new RuntimeException("邮箱已存在");          // 抛出运行时异常
+            throw new BusinessException(4002,"邮箱已存在");          // 抛出运行时异常
         }
 
         //3.密码加密

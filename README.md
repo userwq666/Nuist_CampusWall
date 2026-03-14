@@ -1,78 +1,88 @@
-# 南信大校园墙 (Nuist CampusWall)
+# Nuist CampusWall
 
-一个基于 Spring Boot 的校园社交信息发布平台。
+基于 Spring Boot 的校园信息发布与互动平台（后端）。
 
-## 项目简介
+## 项目概览
+当前项目已完成注册接口主链路，并已建立统一异常与统一返回规范，可作为后续登录、鉴权、帖子与评论模块的基础。
 
-南信大校园墙是一个面向南京信息工程大学师生的校园信息交流平台，
-为校内用户提供便捷的信息发布与浏览服务。
+## 当前已实现
+1. `POST /api/account/register`
+2. 用户名查重（MyBatis-Plus `selectCount`）
+3. 邮箱查重（MyBatis-Plus `selectCount`）
+4. 密码 BCrypt 加密入库
+5. 统一返回体 `Result<T>`
+6. 全局异常处理 `GlobalExceptionHandler`
 
 ## 技术栈
+1. Java 17
+2. Spring Boot 4.0.3
+3. MyBatis-Plus `mybatis-plus-spring-boot4-starter` 3.5.15
+4. MySQL 8
+5. Lombok
+6. `spring-security-crypto`（仅用于密码加密）
 
-- **开发语言**: Java 17
-- **核心框架**: Spring Boot 4.0.3
-- **数据库**: MySQL
-- **ORM 框架**: MyBatis-Plus
-- **其他依赖**: 
-  - spring-boot-starter-webmvc
-  - mysql-connector-java
-  - Lombok
-  - spring-boot-devtools
+## 项目结构（核心）
+```text
+src/main/java/com/nuist_campuswall
+├─ common
+│  ├─ Result.java
+│  ├─ BusinessException.java
+│  └─ GlobalExceptionHandler.java
+├─ controller/account
+├─ service/account
+├─ mapper/user
+├─ domain
+│  ├─ user
+│  ├─ post
+│  ├─ comment
+│  ├─ like
+│  └─ enums
+└─ NuistCampusWallApplication.java
 
-## 快速开始
+src/main/resources
+├─ application.properties
+└─ sql
+   ├─ db_init.sql
+   ├─ db_seed.sql
+   └─ ER.vsdx
+```
 
-### 环境要求
+## 接口快速测试
+测试文件：
+1. `src/test/http/account.http`
 
-- JDK 17
-- MySQL 数据库
+推荐使用 IntelliJ HTTP Client 直接运行。
 
-### 启动方式
+## 数据库说明
+当前 `db_init.sql` 约定：
+1. `user`：用户信息
+2. `post`：帖子（含 `like_count`）
+3. `comment`：评论（扁平楼层 + 回复字段）
+4. `like`：点赞记录（唯一约束防重复点赞）
 
+重点约束：
+1. `comment.reply_to_comment_id` 与 `comment.reply_to_user_id` 必须同空或同非空
+2. `like` 表唯一键 `(user_id, target_type, target_id)` 防重复点赞
+
+## 运行方式
 ```bash
-# 使用 Maven Wrapper 启动
-./mvnw spring-boot:run
-
-# 或打包后运行
-java -jar Nuist_CampusWall.jar
+mvn spring-boot:run
 ```
 
-## 项目结构
+## 下一阶段计划
+1. 登录接口（密码校验）
+2. JWT 鉴权
+3. 帖子模块（发布/列表/详情）
+4. 评论模块（发布/回复/列表）
+5. 点赞模块（帖子与评论点赞/取消）
 
-```
-Nuist_CampusWall/
-├── src/main/java/com/nuist_campuswall/
-│   ├── config/           # 配置类
-│   ├── controller/       # 控制器层
-│   │   └── account/     # 账户模块
-│   ├── service/          # 服务层
-│   │   └── account/     # 账户服务
-│   ├── domain/           # 领域模型
-│   │   ├── enums/       # 枚举类型（集中管理）
-│   │   ├── post/        # 帖子模块
-│   │   ├── comment/     # 评论模块
-│   │   ├── user/        # 用户模块
-│   │   └── like/        # 点赞模块
-│   └── NuistCampusWallApplication.java  # 主启动类
-├── src/main/resources/
-│   ├── application.properties  # 配置文件（含中文注释）
-│   └── sql/                   # SQL 脚本
-│       ├── db_init.sql       # 数据库初始化脚本
-│       └── db_seed.sql       # 测试数据脚本
-└── doc/                     # 项目文档
-    ├── 需求说明.md
-    └── 开发日志.md
-```
-
-## 数据库设计
-
-- **数据库 ER 图（Visio）**: [`src/main/resources/sql/ER.vsdx`](src/main/resources/sql/ER.vsdx)
-- **数据库初始化脚本**: [`src/main/resources/sql/db_init.sql`](src/main/resources/sql/db_init.sql)
-- **测试数据脚本**: [`src/main/resources/sql/db_seed.sql`](src/main/resources/sql/db_seed.sql)
-
-## 开发日志
-
-详见 [开发日志](doc/开发日志.md)
-
-## 需求说明
-
-详见 [需求说明](doc/需求说明.md)
+## 文档目录
+1. `doc/需求说明.md`
+2. `doc/开发日志.md`
+3. `doc/数据字典.md`
+4. `doc/API文档.md`
+5. `doc/部署说明.md`
+6. `doc/测试记录.md`
+7. `doc/架构说明.md`
+8. `doc/错误码说明.md`
+9. `doc/里程碑计划.md`

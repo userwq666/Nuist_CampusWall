@@ -1,4 +1,6 @@
 com\nuist_campuswall\domain\enums\Role.class
+com\nuist_campuswall\common\GlobalExceptionHandler.class
+com\nuist_campuswall\common\BusinessException.class
 com\nuist_campuswall\domain\user\User.class
 com\nuist_campuswall\domain\like\Like.class
 com\nuist_campuswall\mapper\user\UserMapper.class
@@ -8,5 +10,6 @@ com\nuist_campuswall\NuistCampusWallApplication.class
 com\nuist_campuswall\domain\enums\CommentStatus.class
 com\nuist_campuswall\service\account\impl\AccountServiceImpl.class
 com\nuist_campuswall\domain\enums\PostStatus.class
+com\nuist_campuswall\common\Result.class
 com\nuist_campuswall\domain\enums\UserStatus.class
 com\nuist_campuswall\domain\post\Post.class
