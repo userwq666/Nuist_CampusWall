@@ -15,6 +15,6 @@ public class GlobalExceptionHandler {
     // 处理其他异常
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e){
-        return Result.fail(500, "服务器异常,请重试");
+        return Result.fail(5000, "服务器异常,请重试");
     }
 }
