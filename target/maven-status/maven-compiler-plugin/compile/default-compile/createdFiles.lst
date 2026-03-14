@@ -6,6 +6,7 @@ com\nuist_campuswall\domain\comment\Comment.class
 com\nuist_campuswall\domain\enums\TargetType.class
 com\nuist_campuswall\NuistCampusWallApplication.class
 com\nuist_campuswall\domain\enums\CommentStatus.class
+com\nuist_campuswall\service\account\impl\AccountServiceImpl.class
 com\nuist_campuswall\domain\enums\PostStatus.class
 com\nuist_campuswall\domain\enums\UserStatus.class
 com\nuist_campuswall\domain\post\Post.class
