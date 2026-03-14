@@ -49,7 +49,7 @@ src/main/resources
 
 ## 接口快速测试
 测试文件：
-1. `src/test/http/account.http`
+1. [测试文件](src/test/http/account.http)
 
 推荐使用 IntelliJ HTTP Client 直接运行。
 
