@@ -1,6 +1,8 @@
 package com.nuist_campuswall.controller.account;
 
 import com.nuist_campuswall.common.Result;
+import com.nuist_campuswall.dto.account.LoginDTO;
+import com.nuist_campuswall.dto.account.LoginVO;
 import com.nuist_campuswall.dto.account.RegisterDTO;
 import com.nuist_campuswall.service.account.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -17,5 +19,11 @@ public class AccountController {
     public Result<String> register(@RequestBody RegisterDTO dto){        //把json文件转成dto对象
         accountService.register(dto);
         return Result.success("注册成功");
+    }
+
+    @PostMapping("/login")
+    public Result<LoginVO> login(@RequestBody LoginDTO dto){      //把json文件转成dto对象
+        LoginVO vo = accountService.login(dto);
+        return Result.success(vo);
     }
 }

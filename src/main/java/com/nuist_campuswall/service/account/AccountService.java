@@ -1,7 +1,14 @@
 package com.nuist_campuswall.service.account;
 
+import com.nuist_campuswall.dto.account.LoginDTO;
+import com.nuist_campuswall.dto.account.LoginVO;
 import com.nuist_campuswall.dto.account.RegisterDTO;
 
 public interface AccountService {
-    void register(RegisterDTO dto);           // 注册方法 , 参数为注册信息
+    //注册接口
+    void register(RegisterDTO dto);
+
+    //登录接口
+    LoginVO login(LoginDTO dto);
 }
+

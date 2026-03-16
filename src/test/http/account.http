@@ -6,7 +6,7 @@ POST {{base}}/account/register
 Content-Type: application/json
 
 {
-  "username": "test1001",
+  "username": "test1",
   "password": "123456",
   "nickname": "测试用户1001",
   "educationEmail": "test1001@nuist.edu.cn"
@@ -17,7 +17,7 @@ POST {{base}}/account/register
 Content-Type: application/json
 
 {
-  "username": "test1001",
+  "username": "test1",
   "password": "123456",
   "nickname": "测试用户1002",
   "educationEmail": "test1002@nuist.edu.cn"
@@ -28,8 +28,26 @@ POST {{base}}/account/register
 Content-Type: application/json
 
 {
-  "username": "test1003",
+  "username": "test2",
   "password": "123456",
   "nickname": "测试用户1003",
   "educationEmail": "test1001@nuist.edu.cn"
+}
+
+### 4) 登录成功（预期：code=0，data 为 LoginVO 对象）
+POST {{base}}/account/login
+Content-Type: application/json
+
+ {
+  "username": "test1",
+  "password": "123456"
+}
+
+### 5) 登录失败（预期：code=405，message=密码错误，data=null）
+POST {{base}}/account/login
+Content-Type: application/json
+
+ {
+  "username": "test1",
+  "password": "1234567"
 }

@@ -5,6 +5,8 @@ import com.nuist_campuswall.common.BusinessException;
 import com.nuist_campuswall.domain.enums.Role;
 import com.nuist_campuswall.domain.enums.UserStatus;
 import com.nuist_campuswall.domain.user.User;
+import com.nuist_campuswall.dto.account.LoginDTO;
+import com.nuist_campuswall.dto.account.LoginVO;
 import com.nuist_campuswall.dto.account.RegisterDTO;
 import com.nuist_campuswall.mapper.user.UserMapper;
 import com.nuist_campuswall.service.account.AccountService;
@@ -20,6 +22,8 @@ import java.time.LocalDateTime;
 public class AccountServiceImpl implements AccountService {
 
     private final UserMapper userMapper;
+
+    //--------------------注册接口实现--------------------
     @Override
     public void register(RegisterDTO dto) {
         // 1. 检查用户名是否已存在
@@ -59,5 +63,46 @@ public class AccountServiceImpl implements AccountService {
 
         //5.插入数据库
         userMapper.insert(user);
+
+    }
+
+    //--------------登录接口实现--------------------
+    @Override
+    public LoginVO login(LoginDTO dto) {
+        // 1. 查询用户
+        User user = userMapper.selectOne(
+                Wrappers.<User>lambdaQuery()
+                        .eq(User::getUsername,dto.getUsername())
+        );
+
+        // 2. 检查用户是否存在
+        if(user == null){
+            throw new BusinessException(403,"用户名不存在");
+        }
+
+        //3.检查账号状态
+        if(user.getStatus()==UserStatus.DISABLE){
+            throw new BusinessException(404,"用户已被禁用");
+        }
+
+        //4.密码校验
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        //encoder.matches方法：判断密码是否匹配 参数1：用户输入的密码，参数2：数据库中的密码
+        if(!encoder.matches(dto.getPassword(),user.getPassword())){
+            throw new BusinessException(405,"密码错误");
+        }
+
+        //5.映射登录视图对象LoginVO
+        LoginVO vo = new LoginVO();
+        vo.setId(user.getId());
+        vo.setUsername(user.getUsername());
+        vo.setNickname(user.getNickname());
+        vo.setImageUrl(user.getImageUrl());
+        vo.setEducationEmail(user.getEducationEmail());
+        vo.setRole(user.getRole().name());      // 枚举转字符串
+        vo.setStatus(user.getStatus().name());  // 枚举转字符串
+
+        //6.返回结果
+        return vo;
     }
 }

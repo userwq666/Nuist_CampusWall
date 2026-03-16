@@ -3,16 +3,24 @@
 基于 Spring Boot 的校园信息发布与互动平台（后端）。
 
 ## 项目概览
-当前项目已完成注册接口主链路，并已建立统一异常与统一返回规范，可作为后续登录、鉴权、帖子与评论模块的基础。
+当前项目已完成账户模块的注册与登录主链路，并已建立统一异常与统一返回规范，可作为后续 JWT 鉴权、帖子与评论模块的基础。
 
 ## 当前已实现
 1. `POST /api/account/register`
-2. 用户名查重（MyBatis-Plus `selectCount`）
-3. 邮箱查重（MyBatis-Plus `selectCount`）
-4. 密码 BCrypt 加密入库
-5. 统一返回体 `Result<T>`
-6. 全局异常处理 `GlobalExceptionHandler`
-7. 错误码规范：401（用户名已存在）、402（邮箱已存在）
+2. `POST /api/account/login`
+3. 用户名查重（MyBatis-Plus `selectCount`）
+4. 邮箱查重（MyBatis-Plus `selectCount`）
+5. 密码 BCrypt 加密入库
+6. 登录密码校验（`BCryptPasswordEncoder.matches`）
+7. 登录返回 `LoginVO`（不返回密码）
+8. 统一返回体 `Result<T>`
+9. 全局异常处理 `GlobalExceptionHandler`
+10. 错误码规范：
+   - 401（用户名已存在）
+   - 402（邮箱已存在）
+   - 403（用户名不存在）
+   - 404（用户已被禁用）
+   - 405（密码错误）
 
 ## 技术栈
 1. Java 17
@@ -70,11 +78,12 @@ mvn spring-boot:run
 ```
 
 ## 下一阶段计划
-1. 登录接口（密码校验）
-2. JWT 鉴权
-3. 帖子模块（发布/列表/详情）
-4. 评论模块（发布/回复/列表）
-5. 点赞模块（帖子与评论点赞/取消）
+1. JWT 签发与解析
+2. 鉴权拦截（放行 register/login）
+3. `/api/account/me` 当前用户接口
+4. 帖子模块（发布/列表/详情）
+5. 评论模块（发布/回复/列表）
+6. 点赞模块（帖子与评论点赞/取消）
 
 ## 文档目录
 1. [需求说明](doc/需求说明.md)
