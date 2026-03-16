@@ -10,11 +10,11 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
-        <module name="Nuist_CampusWall (1)" />
+        <module name="Nuist_CampusWall" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Nuist_CampusWall" target="17" />
+      <module name="Nuist_CampusWall (1)" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
