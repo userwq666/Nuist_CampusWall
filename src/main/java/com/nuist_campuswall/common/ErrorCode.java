@@ -22,5 +22,8 @@ public final class ErrorCode {
 
     // 业务资源
     public static final int USER_NOT_FOUND = 408;         //用户不存在
+
+    //参数错误
+    public static final int PARAMETER_ERROR = 422;         //参数错误
 }
 

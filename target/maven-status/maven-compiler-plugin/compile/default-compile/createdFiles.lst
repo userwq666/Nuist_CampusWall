@@ -1,4 +1,5 @@
 com\nuist_campuswall\domain\enums\Role.class
+com\nuist_campuswall\service\post\impl\PostServiceImpl.class
 com\nuist_campuswall\service\account\AccountService.class
 com\nuist_campuswall\security\JwtUtil.class
 com\nuist_campuswall\common\BusinessException.class
@@ -13,6 +14,7 @@ com\nuist_campuswall\domain\enums\UserStatus.class
 com\nuist_campuswall\config\WebMvcConfig.class
 com\nuist_campuswall\common\GlobalExceptionHandler.class
 com\nuist_campuswall\dto\account\LoginVO.class
+com\nuist_campuswall\controller\post\PostController.class
 com\nuist_campuswall\domain\user\User.class
 com\nuist_campuswall\domain\like\Like.class
 com\nuist_campuswall\mapper\user\UserMapper.class

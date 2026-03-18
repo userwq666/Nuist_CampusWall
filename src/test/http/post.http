@@ -1,0 +1,46 @@
+@host = http://localhost:8080
+@base = {{host}}/api
+@token = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NiwidXNlcm5hbWUiOiJ0ZXN0MSIsInN0YXR1cyI6IkVOQUJMRSIsImlzcyI6Im51aXN0LWNhbXB1c3dhbGwiLCJpYXQiOjE3NzM4NDUxODEsImV4cCI6MTc3Mzg1MjM4MX0.XSnySi3tawZhkay9eJcTYsm-0Ow-ts2lzOdkTHxZPSA
+
+### 1) 发帖成功（带token，预期 code=0）
+POST {{base}}/post/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "第一条帖子",
+  "content": "这是帖子正文",
+  "imageUrl": null
+}
+
+### 2) 发帖失败（不带token，预期 code=406）
+POST {{base}}/post/create
+Content-Type: application/json
+
+{
+  "title": "未登录发帖",
+  "content": "这条应该失败",
+  "imageUrl": null
+}
+
+### 3) 发帖失败（标题为空，预期 code=422）
+POST {{base}}/post/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "",
+  "content": "标题为空应触发参数校验",
+  "imageUrl": null
+}
+
+### 4) 发帖失败（标题超长，预期 code=422）
+POST {{base}}/post/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "标题超长测试_00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "content": "标题超长应触发参数校验",
+  "imageUrl": null
+}

@@ -1,5 +1,8 @@
 package com.nuist_campuswall.domain.post;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.nuist_campuswall.domain.enums.PostStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +13,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("post")
 public class Post {
     // 主键ID
+    @TableId(type = IdType.AUTO)
     private Long id;
     // 发帖用户ID（关联 User.id）
     private Long userId;
