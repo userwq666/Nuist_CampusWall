@@ -1,13 +1,16 @@
 com\nuist_campuswall\domain\enums\Role.class
 com\nuist_campuswall\service\account\AccountService.class
+com\nuist_campuswall\security\JwtUtil.class
 com\nuist_campuswall\common\BusinessException.class
 com\nuist_campuswall\domain\enums\TargetType.class
+com\nuist_campuswall\security\JwtAuthInterceptor.class
 com\nuist_campuswall\config\initCheck.class
 com\nuist_campuswall\NuistCampusWallApplication.class
 com\nuist_campuswall\domain\enums\CommentStatus.class
 com\nuist_campuswall\service\account\impl\AccountServiceImpl.class
 com\nuist_campuswall\domain\enums\PostStatus.class
 com\nuist_campuswall\domain\enums\UserStatus.class
+com\nuist_campuswall\config\WebMvcConfig.class
 com\nuist_campuswall\common\GlobalExceptionHandler.class
 com\nuist_campuswall\dto\account\LoginVO.class
 com\nuist_campuswall\domain\user\User.class
@@ -15,6 +18,8 @@ com\nuist_campuswall\domain\like\Like.class
 com\nuist_campuswall\mapper\user\UserMapper.class
 com\nuist_campuswall\domain\comment\Comment.class
 com\nuist_campuswall\dto\account\RegisterDTO.class
+com\nuist_campuswall\security\UserContext.class
+com\nuist_campuswall\common\ErrorCode.class
 com\nuist_campuswall\common\Result.class
 com\nuist_campuswall\controller\account\AccountController.class
 com\nuist_campuswall\domain\post\Post.class

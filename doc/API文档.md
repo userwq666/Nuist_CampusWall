@@ -1,4 +1,4 @@
-# Nuist CampusWall API文档（V1.1）
+# Nuist CampusWall API文档（V1.2）
 
 ## 1. 统一返回结构
 所有接口统一返回：
@@ -61,7 +61,7 @@
 
 ### 2.2 用户登录
 - 路径：`POST /api/account/login`
-- 描述：校验账号密码并返回用户基础信息（当前版本未返回 JWT）。
+- 描述：校验账号密码并返回 `token + userInfo`。
 
 请求体：
 ```json
@@ -77,13 +77,16 @@
   "code": 0,
   "message": "success",
   "data": {
-    "id": 6,
-    "username": "test1",
-    "nickname": "测试用户1001",
-    "educationEmail": "test1001@nuist.edu.cn",
-    "imageUrl": null,
-    "role": "USER",
-    "status": "ENABLE"
+    "token": "eyJhbGciOiJIUzI1NiJ9.xxx.yyy",
+    "userInfo": {
+      "id": 6,
+      "username": "test1",
+      "nickname": "测试用户1001",
+      "educationEmail": "test1001@nuist.edu.cn",
+      "imageUrl": null,
+      "role": "USER",
+      "status": "ENABLE"
+    }
   }
 }
 ```
@@ -115,6 +118,46 @@
 }
 ```
 
+### 2.3 获取当前用户
+- 路径：`GET /api/account/me`
+- 描述：通过请求头中的 JWT 获取当前登录用户信息。
+- 请求头：`Authorization: Bearer <token>`
+
+成功响应示例：
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": 6,
+    "username": "test1",
+    "nickname": "测试用户1001",
+    "educationEmail": "test1001@nuist.edu.cn",
+    "imageUrl": null,
+    "role": "USER",
+    "status": "ENABLE"
+  }
+}
+```
+
+失败响应示例（未登录或缺 token）：
+```json
+{
+  "code": 406,
+  "message": "未登录或token缺失",
+  "data": null
+}
+```
+
+失败响应示例（token 无效或过期）：
+```json
+{
+  "code": 407,
+  "message": "token无效或已过期",
+  "data": null
+}
+```
+
 ## 3. 业务状态码（当前）
 1. `0`：成功
 2. `401`：用户名已存在
@@ -122,11 +165,13 @@
 4. `403`：用户名不存在
 5. `404`：用户已被禁用
 6. `405`：密码错误
-7. `500`：服务器异常（全局异常兜底）
+7. `406`：未登录或token缺失
+8. `407`：token无效或已过期
+9. `408`：用户不存在
+10. `500`：服务器异常（全局异常兜底）
 
 ## 4. 待补充接口
-1. 获取当前用户 `GET /api/account/me`
-2. JWT 刷新/退出登录接口（可选）
-3. 帖子模块接口
-4. 评论模块接口
-5. 点赞模块接口
+1. JWT 刷新/退出登录接口（可选）
+2. 帖子模块接口
+3. 评论模块接口
+4. 点赞模块接口

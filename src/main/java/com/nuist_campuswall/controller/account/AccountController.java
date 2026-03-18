@@ -2,6 +2,7 @@ package com.nuist_campuswall.controller.account;
 
 import com.nuist_campuswall.common.Result;
 import com.nuist_campuswall.dto.account.LoginDTO;
+import com.nuist_campuswall.dto.account.LoginRespVO;
 import com.nuist_campuswall.dto.account.LoginVO;
 import com.nuist_campuswall.dto.account.RegisterDTO;
 import com.nuist_campuswall.service.account.AccountService;
@@ -22,8 +23,13 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    public Result<LoginVO> login(@RequestBody LoginDTO dto){      //把json文件转成dto对象
-        LoginVO vo = accountService.login(dto);
-        return Result.success(vo);
+    public Result<LoginRespVO> login(@RequestBody LoginDTO dto){      //把json文件转成dto对象
+        LoginRespVO respVO = accountService.login(dto);
+        return Result.success(respVO);
+    }
+
+    @GetMapping("/me")
+    public Result<LoginVO> me(){
+        return Result.success(accountService.me());
     }
 }

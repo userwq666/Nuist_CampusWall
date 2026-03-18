@@ -1,5 +1,6 @@
 @host = http://localhost:8080
 @base = {{host}}/api
+@token = 请先执行第4条登录请求后手动粘贴最新token
 
 ### 1) 注册成功
 POST {{base}}/account/register
@@ -34,7 +35,7 @@ Content-Type: application/json
   "educationEmail": "test1001@nuist.edu.cn"
 }
 
-### 4) 登录成功（预期：code=0，data 为 LoginVO 对象）
+### 4) 登录成功（预期：code=0，data 为 LoginRespVO，包含 token 和 userInfo）
 POST {{base}}/account/login
 Content-Type: application/json
 
@@ -51,3 +52,10 @@ Content-Type: application/json
   "username": "test1",
   "password": "1234567"
 }
+
+### 6) 获取当前用户（带token，预期：code=0）
+GET {{base}}/account/me
+Authorization: Bearer {{token}}
+
+### 7) 获取当前用户（不带token，预期：code=406）
+GET {{base}}/account/me
