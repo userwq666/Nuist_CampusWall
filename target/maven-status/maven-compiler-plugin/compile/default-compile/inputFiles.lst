@@ -3,6 +3,7 @@ C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\common\GlobalExceptionHandler.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\common\Result.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\config\initCheck.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\config\MybatisPlusConfig.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\config\WebMvcConfig.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\account\AccountController.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\post\PostController.java
@@ -19,7 +20,10 @@ C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\account\LoginRespVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\account\LoginVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\account\RegisterDTO.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\common\PageResult.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\CreatePostDTO.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\PagePostDTO.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\PostVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\mapper\post\PostMapper.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\mapper\user\UserMapper.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\NuistCampusWallApplication.java

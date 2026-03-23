@@ -1,6 +1,5 @@
-@host = http://localhost:8080
 @base = {{host}}/api
-@token = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NiwidXNlcm5hbWUiOiJ0ZXN0MSIsInN0YXR1cyI6IkVOQUJMRSIsImlzcyI6Im51aXN0LWNhbXB1c3dhbGwiLCJpYXQiOjE3NzM4NDUxODEsImV4cCI6MTc3Mzg1MjM4MX0.XSnySi3tawZhkay9eJcTYsm-0Ow-ts2lzOdkTHxZPSA
+@token = {{token}}
 
 ### 1) 注册成功
 POST {{base}}/account/register

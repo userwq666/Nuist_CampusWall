@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/account")     //给类加上统一前缀
 @RequiredArgsConstructor               //该注解会自动为类中的所有final字段创建一个构造函数
 public class AccountController {
+
     private final AccountService accountService;
 
     //注册接口

@@ -12,6 +12,7 @@ com\nuist_campuswall\service\account\impl\AccountServiceImpl.class
 com\nuist_campuswall\domain\enums\PostStatus.class
 com\nuist_campuswall\domain\enums\UserStatus.class
 com\nuist_campuswall\config\WebMvcConfig.class
+com\nuist_campuswall\config\MybatisPlusConfig.class
 com\nuist_campuswall\common\GlobalExceptionHandler.class
 com\nuist_campuswall\dto\account\LoginVO.class
 com\nuist_campuswall\controller\post\PostController.class

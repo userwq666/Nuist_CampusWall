@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 //拦截器
-@Component
+@Component        //把类交给spring管理
 @RequiredArgsConstructor
 public class JwtAuthInterceptor implements HandlerInterceptor {
 

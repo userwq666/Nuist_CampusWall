@@ -1,4 +1,4 @@
-# Nuist CampusWall API文档（V1.3）
+# Nuist CampusWall API文档（V1.4）
 
 ## 1. 统一返回结构
 所有接口统一返回：
@@ -168,8 +168,9 @@
 7. `406`：未登录或token缺失
 8. `407`：token无效或已过期
 9. `408`：用户不存在
-10. `422`：参数校验失败
-11. `500`：服务器异常（全局异常兜底）
+10. `409`：帖子不存在
+11. `422`：参数校验失败
+12. `500`：服务器异常（全局异常兜底）
 
 ## 4. 帖子模块
 
@@ -214,9 +215,75 @@
 }
 ```
 
+### 4.2 帖子分页
+- 路径：`GET /api/post/page?pageNum=1&pageSize=5`
+- 描述：分页获取帖子列表，返回 `PageResult<PostVO>`。
+- 请求头：`Authorization: Bearer <token>`
+
+成功响应示例：
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "total": 12,
+    "records": [
+      {
+        "id": 5,
+        "userId": 2,
+        "title": "第一条帖子",
+        "content": "这是帖子正文",
+        "imageUrl": null,
+        "likeCount": 0,
+        "createTime": "2026-03-23T22:32:56"
+      }
+    ]
+  }
+}
+```
+
+失败响应示例（分页参数非法）：
+```json
+{
+  "code": 422,
+  "message": "页码最小为1",
+  "data": null
+}
+```
+
+### 4.3 帖子详情
+- 路径：`GET /api/post/{id}`
+- 描述：根据帖子 ID 查询详情，返回 `PostVO`。
+- 请求头：`Authorization: Bearer <token>`
+
+成功响应示例：
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": 5,
+    "userId": 2,
+    "title": "第一条帖子",
+    "content": "这是帖子正文",
+    "imageUrl": null,
+    "likeCount": 0,
+    "createTime": "2026-03-23T22:32:56"
+  }
+}
+```
+
+失败响应示例（帖子不存在）：
+```json
+{
+  "code": 409,
+  "message": "帖子不存在",
+  "data": null
+}
+```
+
 ## 5. 待补充接口
 1. JWT 刷新/退出登录接口（可选）
-2. 帖子列表接口
-3. 帖子详情接口
-4. 评论模块接口
-5. 点赞模块接口
+2. 评论模块接口
+3. 点赞模块接口
+4. 管理模块接口

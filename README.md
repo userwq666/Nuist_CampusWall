@@ -18,9 +18,11 @@
 10. 鉴权拦截（`JwtAuthInterceptor` + `WebMvcConfig`）
 11. 统一返回体 `Result<T>`
 12. 全局异常处理 `GlobalExceptionHandler`
-13. 错误码常量化（`ErrorCode`，401~408、422、500）
+13. 错误码常量化（`ErrorCode`，401~409、422、500）
 14. `POST /api/post/create` 发帖接口（已接入 JWT 鉴权）
 15. 发帖参数校验（`@Valid` + `@NotBlank/@Size`，失败返回 `422`）
+16. `GET /api/post/page` 帖子分页接口（返回 `PageResult<PostVO>`）
+17. `GET /api/post/{id}` 帖子详情接口（不存在返回 `409`）
 
 ## 技术栈
 1. Java 21
@@ -67,6 +69,7 @@ src/main/resources
 ## 接口快速测试
 测试文件位置：[src/test/http/account.http](src/test/http/account.http)
 帖子测试文件位置：[src/test/http/post.http](src/test/http/post.http)
+环境变量文件：[src/test/http/http-client.env.json](src/test/http/http-client.env.json)
 
 推荐使用 IntelliJ HTTP Client 直接运行。
 
@@ -89,9 +92,9 @@ mvn spring-boot:run
 ## 下一阶段计划
 1. 鉴权完善（业务码与 HTTP 状态映射）
 2. 账户模块收口（`LoginVO` 映射复用、参数校验注解）
-3. 帖子模块（列表/详情）
-4. 评论模块（发布/回复/列表）
-5. 点赞模块（帖子与评论点赞/取消）
+3. 评论模块（发布/回复/列表）
+4. 点赞模块（帖子与评论点赞/取消）
+5. 管理端帖子状态管理（隐藏/显示）
 
 ## 文档目录
 1. [需求说明](doc/需求说明.md)
