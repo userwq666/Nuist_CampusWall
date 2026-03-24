@@ -1,5 +1,8 @@
 package com.nuist_campuswall.domain.comment;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.nuist_campuswall.domain.enums.CommentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +13,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("comment")
 public class Comment {
     // 主键 ID
+    @TableId(type = IdType.AUTO)
     private Long id;
     // 评论作者 ID（关联 user.id）
     private Long userId;

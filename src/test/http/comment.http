@@ -1,0 +1,61 @@
+@base = {{host}}/api
+@token = {{token}}
+
+### 1) 评论成功（预期 code=0）
+POST {{base}}/comment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "postId": 1,
+  "replyToCommentId": null,
+  "replyToUserId": null,
+  "content": "这是第一条评论",
+  "imageUrl": null
+}
+
+### 2) 未登录评论（预期 code=406）
+POST {{base}}/comment/create
+Content-Type: application/json
+
+{
+  "postId": 1,
+  "replyToCommentId": null,
+  "replyToUserId": null,
+  "content": "未登录评论",
+  "imageUrl": null
+}
+
+### 3) 参数非法（预期 code=422）
+POST {{base}}/comment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "postId": null,
+  "replyToCommentId": null,
+  "replyToUserId": null,
+  "content": "",
+  "imageUrl": null
+}
+
+### 4) 目标帖子不存在（预期 code=409）
+POST {{base}}/comment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "postId": 999999,
+  "replyToCommentId": null,
+  "replyToUserId": null,
+  "content": "目标帖子不存在",
+  "imageUrl": null
+}
+
+### 5) 评论分页成功（预期 code=0，data 为 PageResult<CommentVO>）
+GET {{base}}/comment/page?postId=1&pageNum=1&pageSize=5
+Authorization: Bearer {{token}}
+
+### 6) 评论分页参数非法（预期 code=422）
+GET {{base}}/comment/page?postId=1&pageNum=0&pageSize=20
+Authorization: Bearer {{token}}

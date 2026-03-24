@@ -1,9 +1,9 @@
 package com.nuist_campuswall.service.account;
 
-import com.nuist_campuswall.dto.account.LoginDTO;
-import com.nuist_campuswall.dto.account.LoginRespVO;
-import com.nuist_campuswall.dto.account.LoginVO;
-import com.nuist_campuswall.dto.account.RegisterDTO;
+import com.nuist_campuswall.dto.comment.account.LoginDTO;
+import com.nuist_campuswall.dto.comment.account.LoginRespVO;
+import com.nuist_campuswall.dto.comment.account.LoginVO;
+import com.nuist_campuswall.dto.comment.account.RegisterDTO;
 
 public interface AccountService {
     //注册接口
