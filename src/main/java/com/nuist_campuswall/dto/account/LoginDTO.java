@@ -1,4 +1,4 @@
-package com.nuist_campuswall.dto.comment.account;
+package com.nuist_campuswall.dto.account;
 
 
 import lombok.AllArgsConstructor;

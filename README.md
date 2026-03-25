@@ -3,7 +3,7 @@
 基于 Spring Boot 的校园内容发布与互动平台（后端）。
 
 ## 1. 项目概览
-本项目是期末课程作业，采用前后端分离架构。当前后端已完成“账户 + JWT 鉴权 + 帖子 + 评论”的核心基础链路，已具备继续接入 Vue 前端联调的条件。
+本项目是期末课程作业，采用前后端分离架构。当前后端已完成“账户 + JWT 鉴权 + 帖子 + 评论 + 点赞”的核心基础链路，已具备继续接入 Vue 前端联调的条件。
 
 ## 2. 当前已实现功能
 ### 2.1 账户模块
@@ -31,11 +31,17 @@
 2. `GET /api/comment/page` 评论分页查询（按 `postId`）
 3. 评论发布时校验目标帖子是否存在
 
-### 2.5 通用能力
+### 2.5 点赞模块
+1. `POST /api/like/do` 点赞（支持帖子/评论）
+2. `POST /api/like/undo` 取消点赞（支持帖子/评论）
+3. 重复点赞拦截（`code=411`）
+4. 点赞计数同步维护（`post.like_count` / `comment.like_count`）
+
+### 2.6 通用能力
 1. 统一返回体 `Result<T>`
 2. 统一业务异常 `BusinessException`
 3. 全局异常处理 `GlobalExceptionHandler`
-4. 错误码常量化 `ErrorCode`（401~409、422、500）
+4. 错误码常量化 `ErrorCode`（401~411、422、500）
 
 ## 3. 技术栈（与代码一致）
 1. Java 21
@@ -51,10 +57,10 @@
 src/main/java/com/nuist_campuswall
 ├── common          # Result / ErrorCode / Exception
 ├── config          # MVC、MP、启动检查
-├── controller      # account / post / comment
+├── controller      # account / post / comment / like
 ├── domain          # user / post / comment / like / enums
-├── dto             # account、post、comment、common
-├── mapper          # user / post / comment
+├── dto             # account、post、comment、like、common
+├── mapper          # user / post / comment / like
 ├── security        # JwtUtil / JwtAuthInterceptor / UserContext
 └── service         # 业务层
 
@@ -68,6 +74,7 @@ src/test/http
 ├── account.http
 ├── post.http
 ├── comment.http
+├── like.http
 └── http-client.env.json
 ```
 
@@ -96,11 +103,12 @@ mvn spring-boot:run
    - `account.http`（注册/登录/me）
    - `post.http`（发帖/分页/详情）
    - `comment.http`（评论创建/分页）
+   - `like.http`（点赞/取消点赞）
 
 ## 6. 数据模型说明（摘要）
 1. `user`：用户表
 2. `post`：帖子表（含 `like_count`）
-3. `comment`：评论表（扁平楼层 + 回复字段）
+3. `comment`：评论表（含 `like_count`，扁平楼层 + 回复字段）
 4. `like`：点赞行为记录表（唯一键防重复）
 
 关键约束：
@@ -108,7 +116,7 @@ mvn spring-boot:run
 2. `like` 表唯一键：`(user_id, target_type, target_id)`
 
 ## 7. 下一阶段计划
-1. 完成点赞模块（帖子/评论点赞与取消）
+1. 点赞逻辑优化为原子更新（防并发计数竞争）
 2. 补齐管理员鉴权与管理接口（用户/帖子/评论状态流转）
 3. 优化账号模块参数校验（注册/登录 DTO 增强）
 4. 输出接口联调清单，进入 Vue 前端联调

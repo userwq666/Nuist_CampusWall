@@ -23,6 +23,8 @@ public final class ErrorCode {
     // 业务资源
     public static final int USER_NOT_FOUND = 408;         //用户不存在
     public static final int POST_NOT_FOUND = 409;         //帖子不存在
+    public static final int COMMENT_NOT_FOUND = 410;      //评论不存在
+    public static final int LIKE_EXIST = 411;             //点赞已存在
 
     //参数错误
     public static final int PARAMETER_ERROR = 422;         //参数错误
