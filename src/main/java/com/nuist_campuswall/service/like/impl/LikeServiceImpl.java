@@ -79,11 +79,7 @@ public class LikeServiceImpl implements LikeService {
             case POST:
                 Post dbPost = postMapper.selectById(dto.getTargetId());
                 if(dbPost != null){
-                    Integer PostCount = dbPost.getLikeCount()==null?0:dbPost.getLikeCount();      //帖子点赞数量如果为null，则初始化为0
-                    Post updatePost = new Post();
-                    updatePost.setId(dto.getTargetId());
-                    updatePost.setLikeCount(PostCount+1);
-                    postMapper.updateById(updatePost);                      //更新点赞数量
+                    postMapper.incrLikeCount(dto.getTargetId());                    //更新点赞数量
                 }else {
                     throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
                 }
@@ -91,11 +87,7 @@ public class LikeServiceImpl implements LikeService {
             case COMMENT:
                 Comment dbComment = commentMapper.selectById(dto.getTargetId());
                 if(dbComment != null){
-                    Integer CommentCount = dbComment.getLikeCount()==null?0:dbComment.getLikeCount();    //评论点赞数量如果为null，则初始化为0
-                    Comment updateComment = new Comment();
-                    updateComment.setId(dto.getTargetId());
-                    updateComment.setLikeCount(CommentCount+1);
-                    commentMapper.updateById(updateComment);                      //更新点赞数量
+                    commentMapper.incrLikeCount(dto.getTargetId());              //更新点赞数量
                 }else {
                     throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND, "评论不存在");
                 }
@@ -114,45 +106,43 @@ public class LikeServiceImpl implements LikeService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
         }
 
-        //2.查询点赞记录
-        Like dblike = likeMapper.selectOne(
+        //2.校验目标是否存在
+        switch (dto.getTargetType()) {
+            case POST:
+                if (postMapper.selectById(dto.getTargetId()) == null) {
+                    throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
+                }
+                break;
+            case COMMENT:
+                if (commentMapper.selectById(dto.getTargetId()) == null) {
+                    throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND, "评论不存在");
+                }
+                break;
+            default:
+                throw new BusinessException(ErrorCode.PARAMETER_ERROR, "目标类型错误");
+        }
+
+        // 3. 再查点赞记录
+        Like dbLike = likeMapper.selectOne(
                 new LambdaQueryWrapper<Like>()
                         .eq(Like::getUserId, userId)
                         .eq(Like::getTargetId, dto.getTargetId())
                         .eq(Like::getTargetType, dto.getTargetType())
         );
-        if (dblike == null) {
+        if (dbLike == null) {
             throw new BusinessException(ErrorCode.PARAMETER_ERROR, "用户没有点赞");
         }
 
-        //3.删除点赞记录
-        likeMapper.deleteById(dblike.getId());
+        //4.删除点赞记录
+        likeMapper.deleteById(dbLike.getId());
 
-        //4.更新点赞数量
+        //5.更新点赞数量
         switch (dto.getTargetType()) {
             case POST:
-                Post dbPost = postMapper.selectById(dto.getTargetId());
-                if(dbPost != null){
-                    Integer PostCount = dbPost.getLikeCount()==null?0:dbPost.getLikeCount();
-                    Post updatePost = new Post();
-                    updatePost.setId(dto.getTargetId());
-                    updatePost.setLikeCount(Math.max(PostCount-1, 0));      //减1，不能小于0
-                    postMapper.updateById(updatePost);
-                }else {
-                    throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
-                }
+                postMapper.decrLikeCount(dto.getTargetId());
                 break;
             case COMMENT:
-                Comment dbComment = commentMapper.selectById(dto.getTargetId());
-                if(dbComment != null){
-                    Integer CommentCount = dbComment.getLikeCount()==null?0:dbComment.getLikeCount();
-                    Comment updateComment = new Comment();
-                    updateComment.setId(dto.getTargetId());
-                    updateComment.setLikeCount(Math.max(CommentCount-1, 0));
-                    commentMapper.updateById(updateComment);
-                }else {
-                    throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND, "评论不存在");
-                }
+                commentMapper.decrLikeCount(dto.getTargetId());
                 break;
             default:
                 throw new BusinessException(ErrorCode.PARAMETER_ERROR, "目标类型错误");

@@ -13,6 +13,6 @@ public interface AccountService {
     LoginRespVO login(LoginDTO dto);
 
     //我的接口
-    LoginVO me();
+    LoginVO my();
 }
 

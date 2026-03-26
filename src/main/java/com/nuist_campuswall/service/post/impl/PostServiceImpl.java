@@ -10,6 +10,7 @@ import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.dto.post.CreatePostDTO;
 import com.nuist_campuswall.dto.post.PagePostDTO;
 import com.nuist_campuswall.dto.post.PostVO;
+import com.nuist_campuswall.dto.post.UpdatePostDTO;
 import com.nuist_campuswall.mapper.post.PostMapper;
 import com.nuist_campuswall.security.UserContext;
 import com.nuist_campuswall.service.post.PostService;
@@ -17,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +49,7 @@ public class PostServiceImpl implements PostService {
         postMapper.insert(post);
     }
 
-    //--------------------查询帖子接口实现---------------------
+    //--------------------查询帖子接口实现(公开)---------------------
     @Override
     public PageResult<PostVO> page(PagePostDTO dto) {
         //1.创建 MyBatis-Plus 的分页对象
@@ -59,12 +59,31 @@ public class PostServiceImpl implements PostService {
         Page<Post> result = postMapper.selectPage(
                 page,
                 Wrappers.<Post>lambdaQuery()
+                        .eq(Post::getStatus, PostStatus.ENABLE)
                         .orderByDesc(Post::getCreateTime)  //orderbydesc: 倒序排列
         );
-            
-        //3.将 MyBatis-Plus 的 Page 对象转换为 PageResult 对象
-        List<PostVO> records = result.getRecords().stream().map(this::toPostVO).toList();
-        return new PageResult<>(result.getTotal(), records);
+
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());
+    }
+
+    //--------------------我的帖子接口实现(私有)---------------
+    @Override
+    public PageResult<PostVO> myPage(PagePostDTO dto) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
+        }
+
+        Page<Post> page = new Page<>(dto.getPageNum(), dto.getPageSize());
+        Page<Post> result = postMapper.selectPage(
+                page,
+                Wrappers.<Post>lambdaQuery()
+                        .eq(Post::getUserId, userId)
+                        .eq(Post::getStatus, PostStatus.ENABLE)
+                        .orderByDesc(Post::getCreateTime)
+        );
+
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());
     }
 
     //--------------------帖子详情接口实现---------------------
@@ -77,9 +96,76 @@ public class PostServiceImpl implements PostService {
         if(post == null){
             throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
         }
-        
+        //2.判断帖子是否公开
+        if (post.getStatus() != PostStatus.ENABLE) {
+            throw new BusinessException(ErrorCode.POST_STATUS_ERROR, "帖子不存在");
+        }
         //2.返回结果
         return toPostVO(post);
+    }
+
+    //--------------------修改帖子接口实现---------------------
+    @Override
+    public void updateMyPost(Long id, UpdatePostDTO dto) {
+        // 1.登录校验
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
+        }
+
+        // 2.帖子存在校验
+        Post dbPost = postMapper.selectById(id);
+        if (dbPost == null) {
+            throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
+        }
+
+        // 3.状态校验（已删除不可修改）
+        if (dbPost.getStatus() != PostStatus.ENABLE) {
+            throw new BusinessException(ErrorCode.POST_STATUS_ERROR, "帖子状态错误");
+        }
+
+        // 4.权限校验（只能改自己的）
+        if (!userId.equals(dbPost.getUserId())) {
+            throw new BusinessException(ErrorCode.NO_PERMISSION, "无权修改他人帖子");
+        }
+
+        // 5.更新字段
+        Post updatePost = new Post();
+        updatePost.setId(id);
+        updatePost.setTitle(dto.getTitle());
+        updatePost.setContent(dto.getContent());
+        updatePost.setImageUrl(dto.getImageUrl());
+        updatePost.setUpdateTime(LocalDateTime.now());
+
+        postMapper.updateById(updatePost);
+    }
+
+
+    //--------------------删除帖子接口实现---------------------
+    @Override
+    public void deleteMyPost(Long id) {
+        //1.登陆校验
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
+        }
+
+        //2.判断帖子是否存在
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
+        }
+
+        //3.判断当前用户是否是帖子的作者
+        if (!post.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.NO_PERMISSION, "无权限删除该帖子");
+        }
+
+        //4.删除帖子
+        Post updatePost = new Post();
+        updatePost.setId(id);
+        updatePost.setStatus(PostStatus.DISABLE);
+        postMapper.updateById(updatePost);
     }
 
     //--------------------私有工具方法---------------------

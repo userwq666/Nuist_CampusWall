@@ -129,7 +129,7 @@ public class AccountServiceImpl implements AccountService {
 
     //------------------我的接口实现---------------------
     @Override
-    public LoginVO me() {
+    public LoginVO my() {
         //1.获取当前用户
         Long userId = UserContext.getUserId();
         if(userId == null){

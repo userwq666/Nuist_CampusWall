@@ -1,4 +1,4 @@
-@base = {{host}}/api
+﻿@base = {{host}}/api
 @token = {{token}}
 
 ### 1) 点赞成功（预期 code=0）
@@ -50,12 +50,32 @@ Content-Type: application/json
   "targetId": 1
 }
 
-### 6) 目标不存在（预期 code=409）
+### 6) 帖子目标不存在（预期 code=409）
 POST {{base}}/like/do
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
   "targetType": "POST",
+  "targetId": 999999
+}
+
+### 7) 评论点赞目标不存在（预期 code=410）
+POST {{base}}/like/do
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetType": "COMMENT",
+  "targetId": 999999
+}
+
+### 8) 评论取消点赞目标不存在（预期 code=410）
+POST {{base}}/like/undo
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "targetType": "COMMENT",
   "targetId": 999999
 }

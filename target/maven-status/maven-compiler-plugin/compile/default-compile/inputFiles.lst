@@ -31,6 +31,7 @@ C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\CreatePostDTO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\PagePostDTO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\PostVO.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\post\UpdatePostDTO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\mapper\comment\CommentMapper.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\mapper\like\LikeMapper.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\mapper\post\PostMapper.java

@@ -28,4 +28,18 @@ public class CommentController {
     public Result<PageResult<CommentVO>> page(@Valid @ModelAttribute PageCommentDTO dto) {
         return Result.success(commentService.page(dto));
     }
+
+    //我的评论接口
+    @GetMapping("/my/page")
+    public Result<PageResult<CommentVO>> myPage(@Valid @ModelAttribute PageCommentDTO dto) {
+        return Result.success(commentService.myPage(dto));
+    }
+
+
+    //删除评论接口
+    @PostMapping("/delete/{id}")
+    public Result<String> delete(@PathVariable Long id) {
+        commentService.deleteMyComment(id);
+        return Result.success("评论删除成功");
+    }
 }

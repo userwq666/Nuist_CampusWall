@@ -32,8 +32,8 @@ public class AccountController {
     }
 
     //我的接口
-    @GetMapping("/me")
-    public Result<LoginVO> me(){
-        return Result.success(accountService.me());
+    @GetMapping("/my")
+    public Result<LoginVO> my(){
+        return Result.success(accountService.my());
     }
 }

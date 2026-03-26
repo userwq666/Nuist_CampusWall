@@ -1,7 +1,8 @@
-@base = {{host}}/api
+﻿@base = {{host}}/api
 @token = {{token}}
+@myPostId = 1
 
-### 1) 发帖成功（带token，预期 code=0）
+### 1) 发帖成功（预期 code=0）
 POST {{base}}/post/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -12,7 +13,7 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 2) 发帖失败（不带token，预期 code=406）
+### 2) 发帖失败（不带 token，预期 code=406）
 POST {{base}}/post/create
 Content-Type: application/json
 
@@ -33,29 +34,59 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 4) 发帖失败（标题超长，预期 code=422）
-POST {{base}}/post/create
+### 4) 公开帖子分页（预期 code=0）
+GET {{base}}/post/page?pageNum=1&pageSize=5
+Authorization: Bearer {{token}}
+
+### 5) 我的帖子分页（预期 code=0）
+GET {{base}}/post/my/page?pageNum=1&pageSize=5
+Authorization: Bearer {{token}}
+
+### 6) 帖子详情成功（预期 code=0）
+GET {{base}}/post/{{myPostId}}
+Authorization: Bearer {{token}}
+
+### 7) 修改我的帖子成功（预期 code=0）
+POST {{base}}/post/update/{{myPostId}}
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "title": "标题超长测试_00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "content": "标题超长应触发参数校验",
+  "title": "修改后的标题",
+  "content": "修改后的正文",
   "imageUrl": null
 }
 
-### 5) 帖子分页（预期 code=0，data 为 PageResult<PostVO>）
-GET {{base}}/post/page?pageNum=1&pageSize=5
+### 8) 修改帖子参数非法（预期 code=422）
+POST {{base}}/post/update/{{myPostId}}
+Content-Type: application/json
 Authorization: Bearer {{token}}
 
-### 6) 帖子分页参数非法（预期 code=422）
-GET {{base}}/post/page?pageNum=0&pageSize=20
+{
+  "title": "",
+  "content": "",
+  "imageUrl": null
+}
+
+### 9) 修改不存在帖子（预期 code=409）
+POST {{base}}/post/update/999999
+Content-Type: application/json
 Authorization: Bearer {{token}}
 
-### 7) 帖子详情成功（预期 code=0，data 为 PostVO）
-GET {{base}}/post/1
+{
+  "title": "不存在帖子",
+  "content": "不存在帖子",
+  "imageUrl": null
+}
+
+### 10) 删除我的帖子成功（预期 code=0）
+POST {{base}}/post/delete/{{myPostId}}
 Authorization: Bearer {{token}}
 
-### 8) 帖子详情不存在（预期 code=409）
-GET {{base}}/post/999999
+### 11) 删除不存在帖子（预期 code=409）
+POST {{base}}/post/delete/999999
+Authorization: Bearer {{token}}
+
+### 12) 删除他人帖子（预期 code=412，需准备他人帖子ID）
+POST {{base}}/post/delete/2
 Authorization: Bearer {{token}}

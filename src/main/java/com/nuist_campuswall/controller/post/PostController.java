@@ -5,6 +5,7 @@ import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.dto.post.CreatePostDTO;
 import com.nuist_campuswall.dto.post.PagePostDTO;
 import com.nuist_campuswall.dto.post.PostVO;
+import com.nuist_campuswall.dto.post.UpdatePostDTO;
 import com.nuist_campuswall.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +32,29 @@ public class PostController {
         return Result.success(postService.page(dto));
     }
 
+    //我的帖子接口
+    @GetMapping("/my/page")
+    public Result<PageResult<PostVO>> myPage(@Valid @ModelAttribute PagePostDTO dto){
+        return Result.success(postService.myPage(dto));
+    }
+
     //帖子详情接口
     @GetMapping("/{id}")       //@PathVariable 表示路径参数
     public Result<PostVO> detail(@PathVariable Long id){
         return Result.success(postService.detail(id));
+    }
+
+    //修改帖子接口
+    @PostMapping("/update/{id}")
+    public Result<String> update(@PathVariable Long id, @Valid @RequestBody UpdatePostDTO dto){
+        postService.updateMyPost(id, dto);
+        return Result.success("帖子修改成功");
+    }
+
+    //删除帖子接口
+    @PostMapping("/delete/{id}")
+    public Result<String> delete(@PathVariable Long id){
+        postService.deleteMyPost(id);
+        return Result.success("帖子删除成功");
     }
 }

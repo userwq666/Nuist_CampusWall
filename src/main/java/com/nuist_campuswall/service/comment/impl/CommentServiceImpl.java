@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
         commentMapper.insert(comment);
     }
 
-    //---------------查询评论接口实现------------------
+    //---------------查询评论接口实现(公开)------------------
     @Override
     public PageResult<CommentVO> page(PageCommentDTO dto) {
         //创建 MyBatis-Plus 的分页对象
@@ -69,13 +69,63 @@ public class CommentServiceImpl implements CommentService {
                 page,
                 Wrappers.<Comment>lambdaQuery()
                         .eq(Comment::getPostId, dto.getPostId())
+                        .eq(Comment::getStatus, CommentStatus.ENABLE)
                         .orderByDesc(Comment::getCreateTime)
         );
 
-        //将 MyBatis-Plus 的 Page 对象转换为 PageResult 对象
+        //将 MyBatis-Plus 的 Page 对象转换为 PageResult 对象且返回
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toCommentVO).toList());
+    }
+
+    //---------------查询评论接口实现(私有)------------------
+    @Override
+    public PageResult<CommentVO> myPage(PageCommentDTO dto) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
+        }
+
+        Page<Comment> page = new Page<>(dto.getPageNum(), dto.getPageSize());
+        Page<Comment> result = commentMapper.selectPage(
+                page,
+                Wrappers.<Comment>lambdaQuery()
+                        .eq(Comment::getUserId, userId)
+                        .eq(Comment::getStatus, CommentStatus.ENABLE)
+                        .orderByDesc(Comment::getCreateTime)
+        );
+
         List<CommentVO> records = result.getRecords().stream().map(this::toCommentVO).toList();
         return new PageResult<>(result.getTotal(), records);
     }
+
+
+    //---------------删除评论接口实现------------------
+    @Override
+    public void deleteMyComment(Long id) {
+        // 1) 登录校验
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
+        }
+
+        // 2) 评论存在校验
+        Comment dbComment = commentMapper.selectById(id);
+        if (dbComment == null) {
+            throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND, "评论不存在");
+        }
+
+        // 3) 权限校验：只能删自己的评论
+        if (!userId.equals(dbComment.getUserId())) {
+            throw new BusinessException(ErrorCode.NO_PERMISSION, "无权删除他人评论");
+        }
+
+        // 4) 软删除
+        Comment updateComment = new Comment();
+        updateComment.setId(id);
+        updateComment.setStatus(CommentStatus.DISABLE);
+        commentMapper.updateById(updateComment);
+    }
+
 
     //---------------私有工具方法------------------
     private CommentVO toCommentVO(Comment comment) {
