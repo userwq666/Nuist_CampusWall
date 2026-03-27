@@ -62,7 +62,7 @@ GET {{base}}/comment/page?postId=1&pageNum=0&pageSize=20
 Authorization: Bearer {{token}}
 
 ### 7) 我的评论分页（预期 code=0）
-GET {{base}}/comment/my/page?postId=1&pageNum=1&pageSize=5
+GET {{base}}/comment/my/page?pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
 ### 8) 删除我的评论成功（预期 code=0）
@@ -74,5 +74,5 @@ POST {{base}}/comment/delete/999999
 Authorization: Bearer {{token}}
 
 ### 10) 删除他人评论（预期 code=412，需准备他人评论ID）
-POST {{base}}/comment/delete/2
+POST {{base}}/comment/delete/3
 Authorization: Bearer {{token}}

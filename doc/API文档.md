@@ -1,6 +1,6 @@
-﻿# Nuist CampusWall API 文档（V2.1）
+﻿# Nuist CampusWall API 文档（V2.2）
 
-## 1. 统一返回结构
+## 统一返回
 ```json
 {
   "code": 0,
@@ -9,41 +9,30 @@
 }
 ```
 
-## 2. 账户模块
-### 2.1 注册
-- `POST /api/account/register`
+## 账户
+1. `POST /api/account/register`
+2. `POST /api/account/login`
+3. `GET /api/account/my`
 
-### 2.2 登录
-- `POST /api/account/login`
-- 成功返回 `token + userInfo`
+## 帖子
+1. `POST /api/post/create`
+2. `GET /api/post/page?pageNum=1&pageSize=5`
+3. `GET /api/post/my/page?pageNum=1&pageSize=5`
+4. `GET /api/post/{id}`
+5. `POST /api/post/update/{id}`
+6. `POST /api/post/delete/{id}`
 
-### 2.3 当前用户
-- `GET /api/account/me`
-- Header: `Authorization: Bearer <token>`
+## 评论
+1. `POST /api/comment/create`
+2. `GET /api/comment/page?postId=1&pageNum=1&pageSize=5`
+3. `GET /api/comment/my/page?pageNum=1&pageSize=5`
+4. `POST /api/comment/delete/{id}`
 
-## 3. 帖子模块
-### 3.1 创建帖子
-- `POST /api/post/create`
+## 点赞
+1. `POST /api/like/do`
+2. `POST /api/like/undo`
 
-### 3.2 帖子分页
-- `GET /api/post/page?pageNum=1&pageSize=5`
-
-### 3.3 帖子详情
-- `GET /api/post/{id}`
-
-## 4. 评论模块
-### 4.1 创建评论
-- `POST /api/comment/create`
-
-### 4.2 评论分页
-- `GET /api/comment/page?postId=1&pageNum=1&pageSize=5`
-
-## 5. 点赞模块
-### 5.1 点赞
-- 方法与路径：`POST /api/like/do`
-- 鉴权：需要 token
-
-请求体：
+请求体示例：
 ```json
 {
   "targetType": "POST",
@@ -51,63 +40,19 @@
 }
 ```
 
-说明：
-1. `targetType` 支持 `POST` / `COMMENT`
-2. 重复点赞返回 `code=411`
-
-成功响应：
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": "点赞成功"
-}
-```
-
-### 5.2 取消点赞
-- 方法与路径：`POST /api/like/undo`
-- 鉴权：需要 token
-
-请求体：
-```json
-{
-  "targetType": "POST",
-  "targetId": 1
-}
-```
-
-成功响应：
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": "取消点赞成功"
-}
-```
-
-失败响应（示例）：
-1. 未登录：`code=406`
-2. 未点赞取消：`code=422`
-3. 目标不存在：`POST -> 409`，`COMMENT -> 410`
-
-## 6. 错误码一览
-1. `0`：成功
-2. `401`：用户名已存在
-3. `402`：邮箱已存在
-4. `403`：用户名不存在
-5. `404`：用户已被禁用
-6. `405`：密码错误
-7. `406`：未登录或 token 缺失
-8. `407`：token 无效或已过期
-9. `408`：用户不存在
-10. `409`：帖子不存在
-11. `410`：评论不存在
-12. `411`：点赞已存在（重复点赞）
-13. `422`：参数校验失败或业务参数错误
-14. `500`：服务器异常
-
-## 7. HTTP 用例文件
-1. `src/test/http/account.http`
-2. `src/test/http/post.http`
-3. `src/test/http/comment.http`
-4. `src/test/http/like.http`
+## 业务错误码
+1. `401` 用户名已存在
+2. `402` 邮箱已存在
+3. `403` 用户名不存在
+4. `404` 用户被禁用
+5. `405` 密码错误
+6. `406` 未登录或 token 缺失
+7. `407` token 无效/过期
+8. `408` token 对应用户不存在
+9. `409` 帖子不存在
+10. `410` 评论不存在
+11. `411` 重复点赞
+12. `412` 无权限
+13. `413` 帖子状态错误
+14. `422` 参数错误
+15. `500` 服务器异常

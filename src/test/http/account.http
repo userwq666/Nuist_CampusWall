@@ -19,8 +19,8 @@ Content-Type: application/json
 {
   "username": "test1",
   "password": "123456",
-  "nickname": "测试用户1002",
-  "educationEmail": "test1002@nuist.edu.cn"
+  "nickname": "测试用户1001",
+  "educationEmail": "test1001@nuist.edu.cn"
 }
 
 ### 3) 邮箱重复（预期：业务异常）

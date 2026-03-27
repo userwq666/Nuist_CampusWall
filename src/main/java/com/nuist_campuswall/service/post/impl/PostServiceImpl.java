@@ -98,7 +98,7 @@ public class PostServiceImpl implements PostService {
         }
         //2.判断帖子是否公开
         if (post.getStatus() != PostStatus.ENABLE) {
-            throw new BusinessException(ErrorCode.POST_STATUS_ERROR, "帖子不存在");
+            throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
         }
         //2.返回结果
         return toPostVO(post);

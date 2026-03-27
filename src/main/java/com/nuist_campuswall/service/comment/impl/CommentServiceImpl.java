@@ -9,6 +9,7 @@ import com.nuist_campuswall.domain.enums.CommentStatus;
 import com.nuist_campuswall.domain.post.Post;
 import com.nuist_campuswall.dto.comment.CommentVO;
 import com.nuist_campuswall.dto.comment.CreateCommentDTO;
+import com.nuist_campuswall.dto.comment.MyPageCommentDTO;
 import com.nuist_campuswall.dto.comment.PageCommentDTO;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.mapper.comment.CommentMapper;
@@ -79,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
 
     //---------------查询评论接口实现(私有)------------------
     @Override
-    public PageResult<CommentVO> myPage(PageCommentDTO dto) {
+    public PageResult<CommentVO> myPage(MyPageCommentDTO dto) {
         Long userId = UserContext.getUserId();
         if (userId == null) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");

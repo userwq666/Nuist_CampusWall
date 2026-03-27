@@ -5,6 +5,7 @@ com\nuist_campuswall\dto\like\LikeDTO.class
 com\nuist_campuswall\dto\account\LoginVO.class
 com\nuist_campuswall\dto\like\UnlikeDTO.class
 com\nuist_campuswall\service\like\impl\LikeServiceImpl.class
+com\nuist_campuswall\dto\comment\MyPageCommentDTO.class
 com\nuist_campuswall\dto\account\LoginRespVO.class
 com\nuist_campuswall\mapper\like\LikeMapper.class
 com\nuist_campuswall\dto\account\RegisterDTO.class

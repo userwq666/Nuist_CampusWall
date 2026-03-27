@@ -3,6 +3,7 @@ package com.nuist_campuswall.controller.comment;
 import com.nuist_campuswall.common.Result;
 import com.nuist_campuswall.dto.comment.CommentVO;
 import com.nuist_campuswall.dto.comment.CreateCommentDTO;
+import com.nuist_campuswall.dto.comment.MyPageCommentDTO;
 import com.nuist_campuswall.dto.comment.PageCommentDTO;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.service.comment.CommentService;
@@ -31,7 +32,7 @@ public class CommentController {
 
     //我的评论接口
     @GetMapping("/my/page")
-    public Result<PageResult<CommentVO>> myPage(@Valid @ModelAttribute PageCommentDTO dto) {
+    public Result<PageResult<CommentVO>> myPage(@Valid @ModelAttribute MyPageCommentDTO dto) {
         return Result.success(commentService.myPage(dto));
     }
 

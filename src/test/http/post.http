@@ -88,5 +88,5 @@ POST {{base}}/post/delete/999999
 Authorization: Bearer {{token}}
 
 ### 12) 删除他人帖子（预期 code=412，需准备他人帖子ID）
-POST {{base}}/post/delete/2
+POST {{base}}/post/delete/3
 Authorization: Bearer {{token}}

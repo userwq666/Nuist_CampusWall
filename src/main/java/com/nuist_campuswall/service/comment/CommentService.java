@@ -2,6 +2,7 @@ package com.nuist_campuswall.service.comment;
 
 import com.nuist_campuswall.dto.comment.CommentVO;
 import com.nuist_campuswall.dto.comment.CreateCommentDTO;
+import com.nuist_campuswall.dto.comment.MyPageCommentDTO;
 import com.nuist_campuswall.dto.comment.PageCommentDTO;
 import com.nuist_campuswall.dto.common.PageResult;
 
@@ -13,7 +14,7 @@ public interface CommentService {
     PageResult<CommentVO> page(PageCommentDTO dto);
 
     // 查询评论分页接口(私有)
-    PageResult<CommentVO> myPage(PageCommentDTO dto);
+    PageResult<CommentVO> myPage(MyPageCommentDTO dto);
 
     // 删除评论接口
     void deleteMyComment(Long id);
