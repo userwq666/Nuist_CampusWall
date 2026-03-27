@@ -1,6 +1,6 @@
-﻿# Nuist CampusWall API 文档（V2.2）
+﻿# Nuist CampusWall API 文档（V2.3）
 
-## 统一返回
+## 1. 统一返回
 ```json
 {
   "code": 0,
@@ -9,12 +9,44 @@
 }
 ```
 
-## 账户
-1. `POST /api/account/register`
-2. `POST /api/account/login`
-3. `GET /api/account/my`
+## 2. 账户接口
+### 2.1 注册
+- `POST /api/account/register`
 
-## 帖子
+请求体：
+```json
+{
+  "username": "test1",
+  "password": "123456",
+  "nickname": "测试用户",
+  "educationEmail": "test1@nuist.edu.cn"
+}
+```
+
+### 2.2 登录
+- `POST /api/account/login`
+
+成功响应 `data`：
+```json
+{
+  "token": "jwt-token",
+  "userInfo": {
+    "id": 1,
+    "username": "test1",
+    "nickname": "测试用户",
+    "educationEmail": "test1@nuist.edu.cn",
+    "imageUrl": null,
+    "role": "USER",
+    "status": "ENABLE"
+  }
+}
+```
+
+### 2.3 当前用户
+- `GET /api/account/my`
+- Header: `Authorization: Bearer <token>`
+
+## 3. 帖子接口
 1. `POST /api/post/create`
 2. `GET /api/post/page?pageNum=1&pageSize=5`
 3. `GET /api/post/my/page?pageNum=1&pageSize=5`
@@ -22,17 +54,17 @@
 5. `POST /api/post/update/{id}`
 6. `POST /api/post/delete/{id}`
 
-## 评论
+## 4. 评论接口
 1. `POST /api/comment/create`
 2. `GET /api/comment/page?postId=1&pageNum=1&pageSize=5`
 3. `GET /api/comment/my/page?pageNum=1&pageSize=5`
 4. `POST /api/comment/delete/{id}`
 
-## 点赞
+## 5. 点赞接口
 1. `POST /api/like/do`
 2. `POST /api/like/undo`
 
-请求体示例：
+请求体：
 ```json
 {
   "targetType": "POST",
@@ -40,7 +72,7 @@
 }
 ```
 
-## 业务错误码
+## 6. 错误码（业务）
 1. `401` 用户名已存在
 2. `402` 邮箱已存在
 3. `403` 用户名不存在
