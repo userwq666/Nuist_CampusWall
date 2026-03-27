@@ -15,6 +15,7 @@ import com.nuist_campuswall.mapper.post.PostMapper;
 import com.nuist_campuswall.security.UserContext;
 import com.nuist_campuswall.service.post.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,10 @@ import java.time.LocalDateTime;
 public class PostServiceImpl implements PostService {
 
     private final PostMapper postMapper;
+
+    // 公告管理员ID（配置项）
+    @Value("${app.admin-user-id:1}")
+    private Long adminUserId;
 
     //--------------------发帖接口实现---------------------
     @Override
@@ -54,13 +59,32 @@ public class PostServiceImpl implements PostService {
     public PageResult<PostVO> page(PagePostDTO dto) {
         //1.创建 MyBatis-Plus 的分页对象
         Page<Post> page = new Page<>(dto.getPageNum(), dto.getPageSize());
-            
+
         //2.执行分页查询
         Page<Post> result = postMapper.selectPage(
                 page,
                 Wrappers.<Post>lambdaQuery()
+                        .ne(Post::getUserId, adminUserId)
                         .eq(Post::getStatus, PostStatus.ENABLE)
                         .orderByDesc(Post::getCreateTime)  //orderbydesc: 倒序排列
+        );
+
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());
+    }
+
+    //--------------------公告分页接口实现(公开)---------------------
+    @Override
+    public PageResult<PostVO> noticePage(PagePostDTO dto) {
+        //1.创建 MyBatis-Plus 的分页对象
+        Page<Post> page = new Page<>(dto.getPageNum(), dto.getPageSize());
+
+        //2.执行分页查询（仅管理员帖子，作为公告）
+        Page<Post> result = postMapper.selectPage(
+                page,
+                Wrappers.<Post>lambdaQuery()
+                        .eq(Post::getUserId, adminUserId)
+                        .eq(Post::getStatus, PostStatus.ENABLE)
+                        .orderByDesc(Post::getCreateTime)
         );
 
         return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());

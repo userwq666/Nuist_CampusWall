@@ -43,7 +43,16 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### 5) 登录失败（预期：code=405，message=密码错误，data=null）
+### 5) 管理员登录(预期：code=0，data 为 LoginRespVO，包含 token 和 userInfo)
+POST {{base}}/account/login
+Content-Type: application/json
+
+ {
+  "username": "admin",
+  "password": "123456"
+}
+
+### 6) 登录失败（预期：code=405，message=密码错误，data=null）
 POST {{base}}/account/login
 Content-Type: application/json
 
@@ -52,9 +61,9 @@ Content-Type: application/json
   "password": "1234567"
 }
 
-### 6) 获取当前用户（带token，预期：code=0）
+### 7) 获取当前用户（带token，预期：code=0）
 GET {{base}}/account/my
 Authorization: Bearer {{token}}
 
-### 7) 获取当前用户（不带token，预期：code=406）
+### 8) 获取当前用户（不带token，预期：code=406）
 GET {{base}}/account/my

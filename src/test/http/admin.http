@@ -1,0 +1,29 @@
+﻿@base = {{host}}/api
+@userToken = {{token}}
+@adminToken = {{adminToken}}
+
+### 1) 管理员鉴权失败（普通用户token，预期 code=412）
+GET {{base}}/admin/ping
+Authorization: Bearer {{userToken}}
+
+### 2) 管理员鉴权成功（管理员token，预期 code=0）
+GET {{base}}/admin/ping
+Authorization: Bearer {{adminToken}}
+
+### 3) 未登录访问管理员接口（预期 code=406）
+GET {{base}}/admin/ping
+
+### 4) 管理员用户分页（管理员token，预期 code=0）
+GET {{base}}/admin/user/page?pageNum=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+### 5) 管理员用户分页-按状态筛选（管理员token，预期 code=0）
+GET {{base}}/admin/user/page?pageNum=1&pageSize=5&status=ENABLE
+Authorization: Bearer {{adminToken}}
+
+### 6) 管理员用户分页（普通用户token，预期 code=412）
+GET {{base}}/admin/user/page?pageNum=1&pageSize=5
+Authorization: Bearer {{userToken}}
+
+### 7) 管理员用户分页（未登录，预期 code=406）
+GET {{base}}/admin/user/page?pageNum=1&pageSize=5

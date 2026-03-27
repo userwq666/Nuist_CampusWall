@@ -6,6 +6,7 @@ C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\config\MybatisPlusConfig.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\config\WebMvcConfig.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\account\AccountController.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\admin\AdminController.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\comment\CommentController.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\like\LikeController.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\controller\post\PostController.java
@@ -22,6 +23,8 @@ C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\account\LoginRespVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\account\LoginVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\account\RegisterDTO.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\admin\AdminUserPageDTO.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\admin\AdminUserVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\comment\CommentVO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\comment\CreateCommentDTO.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\dto\comment\MyPageCommentDTO.java
@@ -43,6 +46,10 @@ C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\security\UserContext.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\account\AccountService.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\account\impl\AccountServiceImpl.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\admin\auth\AdminAuthService.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\admin\auth\impl\AdminAuthServiceImpl.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\admin\user\AdminUserService.java
+C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\admin\user\impl\AdminUserServiceImpl.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\comment\CommentService.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\comment\impl\CommentServiceImpl.java
 C:\Users\38429\Desktop\文件合集\java_web\Nuist_CampusWall\src\main\java\com\nuist_campuswall\service\like\impl\LikeServiceImpl.java

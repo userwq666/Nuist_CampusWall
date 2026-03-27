@@ -11,5 +11,4 @@ public class NuistCampusWallApplication {
 
         SpringApplication.run(NuistCampusWallApplication.class, args);
     }
-
 }

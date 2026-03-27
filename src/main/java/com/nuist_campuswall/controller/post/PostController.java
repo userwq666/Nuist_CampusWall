@@ -32,6 +32,12 @@ public class PostController {
         return Result.success(postService.page(dto));
     }
 
+    //查询公告接口
+    @GetMapping("/notice/page")
+    public Result<PageResult<PostVO>> noticePage(@Valid @ModelAttribute PagePostDTO dto){
+        return Result.success(postService.noticePage(dto));
+    }
+
     //我的帖子接口
     @GetMapping("/my/page")
     public Result<PageResult<PostVO>> myPage(@Valid @ModelAttribute PagePostDTO dto){

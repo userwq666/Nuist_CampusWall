@@ -1,4 +1,4 @@
-﻿@base = {{host}}/api
+@base = {{host}}/api
 @token = {{token}}
 @myPostId = 1
 
@@ -36,6 +36,10 @@ Authorization: Bearer {{token}}
 
 ### 4) 公开帖子分页（预期 code=0）
 GET {{base}}/post/page?pageNum=1&pageSize=5
+Authorization: Bearer {{token}}
+
+### 4.1) 公告分页（预期 code=0）
+GET {{base}}/post/notice/page?pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
 ### 5) 我的帖子分页（预期 code=0）
