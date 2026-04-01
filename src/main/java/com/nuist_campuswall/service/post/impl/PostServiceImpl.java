@@ -4,15 +4,19 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nuist_campuswall.common.BusinessException;
 import com.nuist_campuswall.common.ErrorCode;
+import com.nuist_campuswall.domain.enums.FileType;
 import com.nuist_campuswall.domain.enums.PostStatus;
+import com.nuist_campuswall.domain.file.FileAsset;
 import com.nuist_campuswall.domain.post.Post;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.dto.post.CreatePostDTO;
 import com.nuist_campuswall.dto.post.PagePostDTO;
 import com.nuist_campuswall.dto.post.PostVO;
 import com.nuist_campuswall.dto.post.UpdatePostDTO;
+import com.nuist_campuswall.mapper.file.FileAssetMapper;
 import com.nuist_campuswall.mapper.post.PostMapper;
 import com.nuist_campuswall.security.UserContext;
+import com.nuist_campuswall.service.file.FileService;
 import com.nuist_campuswall.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +29,8 @@ import java.time.LocalDateTime;
 public class PostServiceImpl implements PostService {
 
     private final PostMapper postMapper;
+    private final FileService fileService;
+    private final FileAssetMapper fileAssetMapper;
 
     // 公告管理员ID（配置项）
     @Value("${app.admin-user-id:1}")
@@ -44,7 +50,7 @@ public class PostServiceImpl implements PostService {
         post.setUserId(userId);
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
-        post.setImageUrl(dto.getImageUrl());
+        post.setImageUrl(null);
         post.setStatus(PostStatus.ENABLE);
         post.setLikeCount(0);
         post.setCreateTime(LocalDateTime.now());
@@ -52,6 +58,22 @@ public class PostServiceImpl implements PostService {
 
         //3.保存帖子
         postMapper.insert(post);
+
+        //4.文件绑定
+        if(dto.getFileID()!=null){
+            //4.绑定文件到帖子
+            fileService.bindFileToBiz(dto.getFileID(), FileType.POST,post.getId());
+
+            //4.2读取url并填回
+            FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileID());
+            if(fileAsset!=null){
+                Post updataPost =new Post();
+                updataPost.setId(post.getId());
+                updataPost.setImageUrl(fileAsset.getUrl());
+                updataPost.setUpdateTime(LocalDateTime.now());
+                postMapper.updateById(updataPost);
+            }
+        }
     }
 
     //--------------------查询帖子接口实现(公开)---------------------
@@ -161,6 +183,22 @@ public class PostServiceImpl implements PostService {
         updatePost.setImageUrl(dto.getImageUrl());
         updatePost.setUpdateTime(LocalDateTime.now());
 
+        //6.图片处理
+        if(dto.getFileId()!=null){
+            //6.1解绑旧图片
+            fileService.markTempByBiz(FileType.POST, updatePost.getId());
+
+            //6.2绑定文件到帖子
+            fileService.bindFileToBiz(dto.getFileId(), FileType.POST, updatePost.getId());
+
+            //6.3读取url并填回
+            FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileId());
+            if(fileAsset!=null){
+                updatePost.setImageUrl(fileAsset.getUrl());
+            }
+        }
+
+        //7.更新帖子
         postMapper.updateById(updatePost);
     }
 
@@ -190,6 +228,9 @@ public class PostServiceImpl implements PostService {
         updatePost.setId(id);
         updatePost.setStatus(PostStatus.DISABLE);
         postMapper.updateById(updatePost);
+
+        //5.解绑文件
+        fileService.markTempByBiz(FileType.POST, updatePost.getId());
     }
 
     //--------------------私有工具方法---------------------

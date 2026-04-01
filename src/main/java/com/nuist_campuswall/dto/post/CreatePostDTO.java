@@ -15,6 +15,8 @@ public class CreatePostDTO {
     @NotBlank(message = "正文不能为空")
     @Size(max = 10000, message = "正文长度不能超过10000")
     private String content;
-    // 图片链接（先用 URL，后续可改文件上传）
+    // 图片链接
     private String imageUrl;
+    //图片ID
+    private Long fileID;
 }

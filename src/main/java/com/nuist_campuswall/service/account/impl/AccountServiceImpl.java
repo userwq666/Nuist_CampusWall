@@ -3,20 +3,22 @@ package com.nuist_campuswall.service.account.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.nuist_campuswall.common.BusinessException;
 import com.nuist_campuswall.common.ErrorCode;
-import com.nuist_campuswall.security.JwtUtil;
+import com.nuist_campuswall.domain.enums.FileType;
 import com.nuist_campuswall.domain.enums.Role;
 import com.nuist_campuswall.domain.enums.UserStatus;
+import com.nuist_campuswall.domain.file.FileAsset;
 import com.nuist_campuswall.domain.user.User;
-import com.nuist_campuswall.dto.account.LoginDTO;
-import com.nuist_campuswall.dto.account.LoginRespVO;
-import com.nuist_campuswall.dto.account.LoginVO;
-import com.nuist_campuswall.dto.account.RegisterDTO;
+import com.nuist_campuswall.dto.account.*;
+import com.nuist_campuswall.mapper.file.FileAssetMapper;
 import com.nuist_campuswall.mapper.user.UserMapper;
+import com.nuist_campuswall.security.JwtUtil;
 import com.nuist_campuswall.security.UserContext;
 import com.nuist_campuswall.service.account.AccountService;
+import com.nuist_campuswall.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ public class AccountServiceImpl implements AccountService {
 
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
+    private final FileAssetMapper fileAssetMapper;
+    private final FileService fileService;
 
     //--------------------注册接口实现--------------------
     @Override
@@ -129,7 +133,7 @@ public class AccountServiceImpl implements AccountService {
 
     //------------------我的接口实现---------------------
     @Override
-    public LoginVO my() {
+    public LoginVO myInfo() {
         //1.获取当前用户
         Long userId = UserContext.getUserId();
         if(userId == null){
@@ -152,5 +156,87 @@ public class AccountServiceImpl implements AccountService {
         loginVO.setRole(user.getRole().name());
         loginVO.setStatus(user.getStatus().name());
         return loginVO;
+    }
+
+    //------------------修改我的信息接口实现---------------------
+    @Override
+    public void updateMyInfo(MyInfoDTO dto) {
+        //1.获取当前用户
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "未登录或token缺失");
+        }
+
+        //2.查询用户信息
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+
+        //3.参数收口：至少修改一个字段
+        boolean hasNickname = StringUtils.hasText(dto.getNickname());
+        boolean hasImageUrl = dto.getImageUrl() != null;
+        boolean hasFileId = dto.getFileID() != null;
+        boolean hasEmail = StringUtils.hasText(dto.getEducationEmail());
+        boolean hasOldPassword = StringUtils.hasText(dto.getOldPassword());
+        boolean hasNewPassword = StringUtils.hasText(dto.getNewPassword());
+        if (!hasNickname && !hasImageUrl && !hasEmail && !hasOldPassword && !hasNewPassword && !hasFileId) {
+            throw new BusinessException(ErrorCode.PARAMETER_ERROR, "请至少提供一个需要修改的字段");
+        }
+
+        //4.修改邮箱（若提供且有变化，校验唯一性）
+        if (hasEmail && !dto.getEducationEmail().equals(user.getEducationEmail())) {
+            long emailCount = userMapper.selectCount(
+                    Wrappers.<User>lambdaQuery()
+                            .eq(User::getEducationEmail, dto.getEducationEmail())
+                            .ne(User::getId, userId)
+            );
+            if (emailCount > 0) {
+                throw new BusinessException(ErrorCode.EMAIL_EXISTS, "邮箱已被绑定");
+            }
+        }
+
+        //5.修改密码（必须同时提供旧密码和新密码）
+        String encodedNewPassword = null;
+        if (hasOldPassword || hasNewPassword) {
+            if (!hasOldPassword || !hasNewPassword) {
+                throw new BusinessException(ErrorCode.PARAMETER_ERROR, "修改密码需同时提供旧密码和新密码");
+            }
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            if (!encoder.matches(dto.getOldPassword(), user.getPassword())) {
+                throw new BusinessException(ErrorCode.PASSWORD_INCORRECT, "旧密码错误");
+            }
+            encodedNewPassword = encoder.encode(dto.getNewPassword());
+        }
+
+        //6.更新用户信息
+        User updateUser = new User();
+        updateUser.setId(userId);
+        if (hasNickname) {
+            updateUser.setNickname(dto.getNickname());
+        }
+        if (hasFileId) {
+            // 先把旧头像解绑为TEMP（如果有）
+            fileService.markTempByBiz(FileType.AVATAR, userId);
+
+            // 绑定新头像到当前用户
+            fileService.bindFileToBiz(dto.getFileID(), FileType.AVATAR, userId);
+
+            // 回填最新URL到 user.image_url
+            FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileID());
+            if (fileAsset != null) {
+                updateUser.setImageUrl(fileAsset.getUrl());
+            }
+        }
+        if (hasEmail) {
+            updateUser.setEducationEmail(dto.getEducationEmail());
+        }
+        if (encodedNewPassword != null) {
+            updateUser.setPassword(encodedNewPassword);
+        }
+
+
+        updateUser.setUpdateTime(LocalDateTime.now());
+        userMapper.updateById(updateUser);
     }
 }

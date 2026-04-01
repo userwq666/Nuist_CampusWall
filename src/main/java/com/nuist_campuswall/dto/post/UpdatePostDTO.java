@@ -15,4 +15,6 @@ public class UpdatePostDTO {
     private String content;
 
     private String imageUrl;
+
+    private Long fileId;
 }

@@ -1,6 +1,9 @@
-﻿@base = {{host}}/api
+@base = {{host}}/api
 @userToken = {{token}}
 @adminToken = {{adminToken}}
+@targetUserId = 2
+@targetPostId = 1
+@targetCommentId = 1
 
 ### 1) 管理员鉴权失败（普通用户token，预期 code=412）
 GET {{base}}/admin/ping
@@ -27,3 +30,116 @@ Authorization: Bearer {{userToken}}
 
 ### 7) 管理员用户分页（未登录，预期 code=406）
 GET {{base}}/admin/user/page?pageNum=1&pageSize=5
+
+### 8) 管理员禁用用户（管理员token，预期 code=0）
+POST {{base}}/admin/user/disable/{{targetUserId}}
+Authorization: Bearer {{adminToken}}
+
+### 9) 管理员重复禁用用户（管理员token，预期 code=422）
+POST {{base}}/admin/user/disable/{{targetUserId}}
+Authorization: Bearer {{adminToken}}
+
+### 10) 管理员启用用户（管理员token，预期 code=0）
+POST {{base}}/admin/user/enable/{{targetUserId}}
+Authorization: Bearer {{adminToken}}
+
+### 11) 管理员重复启用用户（管理员token，预期 code=422）
+POST {{base}}/admin/user/enable/{{targetUserId}}
+Authorization: Bearer {{adminToken}}
+
+### 12) 普通用户调用禁用接口（普通用户token，预期 code=412）
+POST {{base}}/admin/user/disable/{{targetUserId}}
+Authorization: Bearer {{userToken}}
+
+### 13) 未登录调用启用接口（预期 code=406）
+POST {{base}}/admin/user/enable/{{targetUserId}}
+
+### 14) 管理员帖子分页（管理员token，预期 code=0）
+GET {{base}}/admin/post/page?pageNum=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+### 15) 管理员帖子分页-按发帖人筛选（管理员token，预期 code=0）
+GET {{base}}/admin/post/page?pageNum=1&pageSize=5&userId=2
+Authorization: Bearer {{adminToken}}
+
+### 16) 管理员帖子分页-按状态筛选（管理员token，预期 code=0）
+GET {{base}}/admin/post/page?pageNum=1&pageSize=5&status=ENABLE
+Authorization: Bearer {{adminToken}}
+
+### 17) 管理员帖子详情（管理员token，预期 code=0）
+GET {{base}}/admin/post/detail/{{targetPostId}}
+Authorization: Bearer {{adminToken}}
+
+### 18) 管理员帖子详情-不存在（管理员token，预期 code=409）
+GET {{base}}/admin/post/detail/999999
+Authorization: Bearer {{adminToken}}
+
+### 19) 管理员禁用帖子（管理员token，预期 code=0）
+POST {{base}}/admin/post/disable/{{targetPostId}}
+Authorization: Bearer {{adminToken}}
+
+### 20) 管理员重复禁用帖子（管理员token，预期 code=422）
+POST {{base}}/admin/post/disable/{{targetPostId}}
+Authorization: Bearer {{adminToken}}
+
+### 21) 管理员启用帖子（管理员token，预期 code=0）
+POST {{base}}/admin/post/enable/{{targetPostId}}
+Authorization: Bearer {{adminToken}}
+
+### 22) 管理员重复启用帖子（管理员token，预期 code=422）
+POST {{base}}/admin/post/enable/{{targetPostId}}
+Authorization: Bearer {{adminToken}}
+
+### 23) 普通用户调用帖子禁用接口（普通用户token，预期 code=412）
+POST {{base}}/admin/post/disable/{{targetPostId}}
+Authorization: Bearer {{userToken}}
+
+### 24) 未登录调用帖子启用接口（预期 code=406）
+POST {{base}}/admin/post/enable/{{targetPostId}}
+
+### 25) 管理员评论分页（管理员token，预期 code=0）
+GET {{base}}/admin/comment/page?pageNum=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+### 26) 管理员评论分页-按帖子筛选（管理员token，预期 code=0）
+GET {{base}}/admin/comment/page?pageNum=1&pageSize=5&postId=1
+Authorization: Bearer {{adminToken}}
+
+### 27) 管理员评论分页-按评论人筛选（管理员token，预期 code=0）
+GET {{base}}/admin/comment/page?pageNum=1&pageSize=5&userId=1
+Authorization: Bearer {{adminToken}}
+
+### 28) 管理员评论分页-按状态筛选（管理员token，预期 code=0）
+GET {{base}}/admin/comment/page?pageNum=1&pageSize=5&status=ENABLE
+Authorization: Bearer {{adminToken}}
+
+### 29) 管理员评论详情（管理员token，预期 code=0）
+GET {{base}}/admin/comment/detail/{{targetCommentId}}
+Authorization: Bearer {{adminToken}}
+
+### 30) 管理员评论详情-不存在（管理员token，预期 code=410）
+GET {{base}}/admin/comment/detail/999999
+Authorization: Bearer {{adminToken}}
+
+### 31) 管理员禁用评论（管理员token，预期 code=0）
+POST {{base}}/admin/comment/disable/{{targetCommentId}}
+Authorization: Bearer {{adminToken}}
+
+### 32) 管理员重复禁用评论（管理员token，预期 code=422）
+POST {{base}}/admin/comment/disable/{{targetCommentId}}
+Authorization: Bearer {{adminToken}}
+
+### 33) 管理员启用评论（管理员token，预期 code=0）
+POST {{base}}/admin/comment/enable/{{targetCommentId}}
+Authorization: Bearer {{adminToken}}
+
+### 34) 管理员重复启用评论（管理员token，预期 code=422）
+POST {{base}}/admin/comment/enable/{{targetCommentId}}
+Authorization: Bearer {{adminToken}}
+
+### 35) 普通用户调用评论禁用接口（普通用户token，预期 code=412）
+POST {{base}}/admin/comment/disable/{{targetCommentId}}
+Authorization: Bearer {{userToken}}
+
+### 36) 未登录调用评论启用接口（预期 code=406）
+POST {{base}}/admin/comment/enable/{{targetCommentId}}

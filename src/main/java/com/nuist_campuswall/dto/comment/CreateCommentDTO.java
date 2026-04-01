@@ -20,4 +20,6 @@ public class CreateCommentDTO {
     private String content;
     // 图片链接（先用 URL，后续可改文件上传）
     private String imageUrl;
+    //文件ID
+    private Long fileId;
 }

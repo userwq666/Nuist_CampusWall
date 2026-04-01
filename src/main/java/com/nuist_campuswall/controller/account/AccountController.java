@@ -4,8 +4,10 @@ import com.nuist_campuswall.common.Result;
 import com.nuist_campuswall.dto.account.LoginDTO;
 import com.nuist_campuswall.dto.account.LoginRespVO;
 import com.nuist_campuswall.dto.account.LoginVO;
+import com.nuist_campuswall.dto.account.MyInfoDTO;
 import com.nuist_campuswall.dto.account.RegisterDTO;
 import com.nuist_campuswall.service.account.AccountService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,13 @@ public class AccountController {
     //我的接口
     @GetMapping("/my")
     public Result<LoginVO> my(){
-        return Result.success(accountService.my());
+        return Result.success(accountService.myInfo());
+    }
+
+    //修改我的信息接口
+    @PostMapping("/my/update")
+    public Result<String> updateMyInfo(@Valid @RequestBody MyInfoDTO dto){
+        accountService.updateMyInfo(dto);
+        return Result.success("个人信息修改成功");
     }
 }

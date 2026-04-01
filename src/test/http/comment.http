@@ -1,6 +1,20 @@
 ﻿@base = {{host}}/api
 @token = {{token}}
+@postId = 1
 @myCommentId = 1
+@commentFileId = 5
+
+### A1) 上传评论图片（预期 code=0，返回 fileId；手动填入 @commentFileId）
+POST {{base}}/file/upload?fileType=COMMENT
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test_pass.png"
+Content-Type: image/png
+
+< ../images/test_pass.png
+--WebAppBoundary--
 
 ### 1) 评论成功（预期 code=0）
 POST {{base}}/comment/create
@@ -8,11 +22,26 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "postId": 1,
+  "postId": {{postId}},
   "replyToCommentId": null,
   "replyToUserId": null,
   "content": "这是第一条评论",
-  "imageUrl": null
+  "imageUrl": null,
+  "fileId": {{commentFileId}}
+}
+
+### 1.1) 重复绑定同一 fileId（第二次评论，预期 code=417）
+POST {{base}}/comment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "postId": {{postId}},
+  "replyToCommentId": null,
+  "replyToUserId": null,
+  "content": "同一个fileId重复绑定应失败",
+  "imageUrl": null,
+  "fileId": {{commentFileId}}
 }
 
 ### 2) 未登录评论（预期 code=406）
@@ -20,7 +49,7 @@ POST {{base}}/comment/create
 Content-Type: application/json
 
 {
-  "postId": 1,
+  "postId": {{postId}},
   "replyToCommentId": null,
   "replyToUserId": null,
   "content": "未登录评论",
@@ -54,11 +83,11 @@ Authorization: Bearer {{token}}
 }
 
 ### 5) 公开评论分页（预期 code=0）
-GET {{base}}/comment/page?postId=1&pageNum=1&pageSize=5
+GET {{base}}/comment/page?postId={{postId}}&pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
 ### 6) 评论分页参数非法（预期 code=422）
-GET {{base}}/comment/page?postId=1&pageNum=0&pageSize=20
+GET {{base}}/comment/page?postId={{postId}}&pageNum=0&pageSize=20
 Authorization: Bearer {{token}}
 
 ### 7) 我的评论分页（预期 code=0）
@@ -68,6 +97,8 @@ Authorization: Bearer {{token}}
 ### 8) 删除我的评论成功（预期 code=0）
 POST {{base}}/comment/delete/{{myCommentId}}
 Authorization: Bearer {{token}}
+
+### 8.1) 删除后应触发图片转TEMP（需数据库验证 file_asset.status=TEMP）
 
 ### 9) 删除不存在评论（预期 code=410）
 POST {{base}}/comment/delete/999999

@@ -28,4 +28,10 @@ public final class ErrorCode {
     public static final int COMMENT_NOT_FOUND = 410;     // 评论不存在
     public static final int LIKE_EXIST = 411;            // 已点赞，不可重复点赞
     public static final int POST_STATUS_ERROR = 413;     // 帖子状态错误
+    public static final int FILE_NOT_FOUND = 414;        // 文件不存在
+    public static final int FILE_TYPE_ERROR = 415;       // 文件类型错误
+    public static final int FILE_SIZE_ERROR = 416;       // 文件大小错误
+    public static final int FILE_STATUS_ERROR = 417;     // 文件状态错误
+    public static final int FILE_UPLOAD_ERROR = 418;    // 文件上传失败
+    public static final int FILE_DELETE_ERROR = 419;     // 文件删除失败
 }

@@ -6,6 +6,8 @@ import com.nuist_campuswall.common.BusinessException;
 import com.nuist_campuswall.common.ErrorCode;
 import com.nuist_campuswall.domain.comment.Comment;
 import com.nuist_campuswall.domain.enums.CommentStatus;
+import com.nuist_campuswall.domain.enums.FileType;
+import com.nuist_campuswall.domain.file.FileAsset;
 import com.nuist_campuswall.domain.post.Post;
 import com.nuist_campuswall.dto.comment.CommentVO;
 import com.nuist_campuswall.dto.comment.CreateCommentDTO;
@@ -13,9 +15,11 @@ import com.nuist_campuswall.dto.comment.MyPageCommentDTO;
 import com.nuist_campuswall.dto.comment.PageCommentDTO;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.mapper.comment.CommentMapper;
+import com.nuist_campuswall.mapper.file.FileAssetMapper;
 import com.nuist_campuswall.mapper.post.PostMapper;
 import com.nuist_campuswall.security.UserContext;
 import com.nuist_campuswall.service.comment.CommentService;
+import com.nuist_campuswall.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +31,8 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
+    private final FileService fileService;
+    private final FileAssetMapper fileAssetMapper;
 
     //---------------创建评论接口实现------------------
     @Override
@@ -50,13 +56,28 @@ public class CommentServiceImpl implements CommentService {
         comment.setReplyToCommentId(dto.getReplyToCommentId());
         comment.setReplyToUserId(dto.getReplyToUserId());
         comment.setContent(dto.getContent());
-        comment.setImageUrl(dto.getImageUrl());
+        comment.setImageUrl(null);
         comment.setStatus(CommentStatus.ENABLE);
         comment.setLikeCount(0);
         comment.setCreateTime(java.time.LocalDateTime.now());
 
         //4.插入评论
         commentMapper.insert(comment);
+
+        //5.文件绑定
+        if(dto.getFileId()!=null){
+            //5.1绑定文件到评论
+            fileService.bindFileToBiz(dto.getFileId(), FileType.COMMENT,comment.getId());
+
+            //5.2读取url并填回
+            FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileId());
+            if(fileAsset!=null){
+                Comment updataComment =new Comment();
+                updataComment.setId(comment.getId());
+                updataComment.setImageUrl(fileAsset.getUrl());
+                commentMapper.updateById(updataComment);
+            }
+        }
     }
 
     //---------------查询评论接口实现(公开)------------------
@@ -125,6 +146,9 @@ public class CommentServiceImpl implements CommentService {
         updateComment.setId(id);
         updateComment.setStatus(CommentStatus.DISABLE);
         commentMapper.updateById(updateComment);
+
+        // 5) 删除文件绑定
+        fileService.markTempByBiz(FileType.COMMENT, updateComment.getId());
     }
 
 

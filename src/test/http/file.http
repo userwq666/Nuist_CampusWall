@@ -1,0 +1,67 @@
+@base = {{host}}/api
+@token = {{token}}
+
+### 1) 上传图片成功（预期 code=0，返回 fileId）
+POST {{base}}/file/upload?fileType=POST
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test_pass.png"
+Content-Type: image/png
+
+< ../images/test_pass.png
+--WebAppBoundary--
+> {%
+    client.global.set("uploadedFileId", response.body.data);
+%}
+
+### 2) 非图片格式上传（预期 code=415，FILE_TYPE_ERROR）
+POST {{base}}/file/upload?fileType=POST
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="pom.xml"
+Content-Type: application/xml
+
+< ../../../pom.xml
+--WebAppBoundary--
+
+### 3) 超过大小限制（预期 code=416）
+### 说明：这里固定使用 test_nopass.png
+POST {{base}}/file/upload?fileType=POST
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test_nopass.png"
+Content-Type: image/png
+
+< ../images/test_nopass.png
+--WebAppBoundary--
+
+### 4) 未登录上传（预期 code=406）
+POST {{base}}/file/upload?fileType=POST
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test_pass.png"
+Content-Type: image/png
+
+< ../images/test_pass.png
+--WebAppBoundary--
+
+### 5) fileType 缺失（预期参数错误）
+POST {{base}}/file/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test_pass.png"
+Content-Type: image/png
+
+< ../images/test_pass.png
+--WebAppBoundary--
+
+### 6) 说明：重复绑定/换图/删后转TEMP 在 post.http 与 comment.http 中验证

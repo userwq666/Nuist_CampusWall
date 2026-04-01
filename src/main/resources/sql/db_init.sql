@@ -75,3 +75,35 @@ CREATE TABLE IF NOT EXISTS `like` (
     KEY `idx_like_user_create_time` (`user_id`, `create_time`),
     CONSTRAINT `fk_user_like_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='点赞记录表';
+
+-- 文件资源表
+CREATE TABLE IF NOT EXISTS `file_asset` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '文件ID',
+    `owner_user_id` BIGINT NOT NULL COMMENT '上传用户ID',
+    `file_type` TINYINT NOT NULL COMMENT '文件类型: 1帖子图片, 2评论图片, 3头像',
+    `biz_type` TINYINT DEFAULT NULL COMMENT '业务类型: 1帖子, 2评论, 3头像',
+    `biz_id` BIGINT DEFAULT NULL COMMENT '业务ID',
+    `original_name` VARCHAR(255) NOT NULL COMMENT '原始文件名',
+    `object_key` VARCHAR(255) NOT NULL COMMENT '对象存储路径key',
+    `url` VARCHAR(500) NOT NULL COMMENT '访问URL',
+    `mime_type` VARCHAR(100) NOT NULL COMMENT 'MIME类型',
+    `file_ext` VARCHAR(20) DEFAULT NULL COMMENT '文件后缀',
+    `file_size` BIGINT NOT NULL COMMENT '文件大小(字节)',
+    `sha256` CHAR(64) DEFAULT NULL COMMENT '文件内容摘要',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0临时, 1已绑定, 2已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY `uk_file_asset_object_key` (`object_key`),
+    KEY `idx_file_asset_owner_status_create_time` (`owner_user_id`, `status`, `create_time`),
+    KEY `idx_file_asset_file_type_status_create_time` (`file_type`, `status`, `create_time`),
+    KEY `idx_file_asset_biz_type_biz_id` (`biz_type`, `biz_id`),
+    KEY `idx_file_asset_sha256` (`sha256`),
+    CONSTRAINT `fk_file_asset_owner_user` FOREIGN KEY (`owner_user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `ck_file_asset_type` CHECK (`file_type` IN (1, 2, 3)),
+    CONSTRAINT `ck_file_asset_biz_type` CHECK (`biz_type` IS NULL OR `biz_type` IN (1, 2, 3)),
+    CONSTRAINT `ck_file_asset_status` CHECK (`status` IN (0, 1, 2)),
+    CONSTRAINT `ck_file_asset_bind_pair` CHECK (
+        (`biz_type` IS NULL AND `biz_id` IS NULL)
+        OR (`biz_type` IS NOT NULL AND `biz_id` IS NOT NULL)
+    )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件资源表';

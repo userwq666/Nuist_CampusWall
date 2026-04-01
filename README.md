@@ -1,60 +1,82 @@
-# Nuist CampusWall
+﻿# Nuist CampusWall
 
-基于 Spring Boot + MyBatis-Plus 的校园墙后端项目（课程期末作业）。
+基于 `Spring Boot + Vue 3` 的校园墙项目（课程期末作业），当前后端已完成主链路闭环，进入交付收口阶段。
 
-## 1. 项目目标
-1. 面向校园场景，提供用户注册登录、发帖、评论、点赞、个人中心能力。
-2. 后端先行完成接口闭环，前端后续按小红书风格逐步接入。
-3. 当前阶段重点是“稳定可演示 + 文档可答辩 + 代码可扩展”。
+## 1. 项目定位
+1. 面向校园社区场景，提供账号、发帖、评论、点赞、个人中心与管理员治理能力。
+2. 采用“后端先闭环”策略，确保可演示、可答辩、可扩展。
+3. 通过统一鉴权、统一返回、统一错误码降低联调成本。
 
-## 2. 当前完成度（截至 2026-03-28）
-### 2.1 账户模块
-1. `POST /api/account/register`
-2. `POST /api/account/login`
-3. `GET /api/account/my`
+## 2. 当前完成度（截至 2026-04-01）
+### 2.1 用户端接口
+1. 账号：`/api/account/register`、`/api/account/login`、`/api/account/my`、`/api/account/my/update`
+2. 帖子：`/api/post/create`、`/api/post/page`、`/api/post/notice/page`、`/api/post/my/page`、`/api/post/{id}`、`/api/post/update/{id}`、`/api/post/delete/{id}`
+3. 评论：`/api/comment/create`、`/api/comment/page`、`/api/comment/my/page`、`/api/comment/delete/{id}`
+4. 点赞：`/api/like/do`、`/api/like/undo`
+5. 文件：`/api/file/upload`（支持 `POST/COMMENT/AVATAR`）
 
-### 2.2 帖子模块
-1. `POST /api/post/create`
-2. `GET /api/post/page`（公开帖子）
-3. `GET /api/post/notice/page`（公告帖子）
-4. `GET /api/post/my/page`
-5. `GET /api/post/{id}`
-6. `POST /api/post/update/{id}`
-7. `POST /api/post/delete/{id}`
+### 2.2 管理员接口
+1. 鉴权：`/api/admin/ping`
+2. 用户治理：`/api/admin/user/page`、`/api/admin/user/enable/{userId}`、`/api/admin/user/disable/{userId}`
+3. 帖子治理：`/api/admin/post/page`、`/api/admin/post/detail/{postId}`、`/api/admin/post/enable/{postId}`、`/api/admin/post/disable/{postId}`
+4. 评论治理：`/api/admin/comment/page`、`/api/admin/comment/detail/{commentId}`、`/api/admin/comment/enable/{commentId}`、`/api/admin/comment/disable/{commentId}`
 
-### 2.3 评论模块
-1. `POST /api/comment/create`
-2. `GET /api/comment/page`
-3. `GET /api/comment/my/page`
-4. `POST /api/comment/delete/{id}`
+### 2.3 通用能力
+1. JWT 鉴权：`JwtUtil + JwtAuthInterceptor + UserContext`
+2. 统一响应：`Result<T>`
+3. 统一异常：`BusinessException + GlobalExceptionHandler`
+4. 统一错误码：`ErrorCode`
+5. 文件生命周期：`TEMP -> BOUND -> TEMP(解绑) -> DELETED(定时清理)`
 
-### 2.4 点赞模块
-1. `POST /api/like/do`
-2. `POST /api/like/undo`
+## 3. 技术栈
+1. JDK 21
+2. Spring Boot 4
+3. MyBatis-Plus 3.5
+4. MySQL 8
+5. JWT（jjwt）
+6. Lombok
+7. Vue 3（前端开发中）
 
-### 2.5 管理员模块（当前已落地基础）
-1. `GET /api/admin/ping`
-2. `GET /api/admin/user/page`
+## 4. 项目结构
+1. `src/main/java/com/nuist_campuswall/controller`：接口层
+2. `src/main/java/com/nuist_campuswall/service`：业务层
+3. `src/main/java/com/nuist_campuswall/mapper`：数据访问层
+4. `src/main/java/com/nuist_campuswall/security`：JWT 与鉴权上下文
+5. `src/main/java/com/nuist_campuswall/common`：返回体、异常、错误码
+6. `src/main/resources/sql`：建表与种子脚本
+7. `src/test/http`：HTTP 回归用例
+8. `frontend`：前端目录（预留）
+9. `doc`：项目文档
 
-### 2.6 通用能力
-1. 统一返回体 `Result<T>`
-2. `BusinessException` + `GlobalExceptionHandler`
-3. JWT 鉴权拦截器 + `UserContext`
-4. 统一错误码 `ErrorCode`
+## 5. 快速启动（后端）
+1. 准备 MySQL 并配置 `application.properties`。
+2. 关注关键配置：数据库、JWT、文件存储路径、文件大小限制。
+3. 启动：
+   ```bash
+   mvn spring-boot:run
+   ```
+4. 启动后自动执行：
+   - `src/main/resources/sql/db_init.sql`
+   - `src/main/resources/sql/db_seed.sql`
 
-## 3. 关键配置
-1. `app.admin-user-id=1`（管理员用户ID，用于公告与公开帖子过滤）
-2. `jwt.secret`、`jwt.expire-seconds`、`jwt.issuer`
+## 6. 回归测试
+1. 用例目录：`src/test/http`
+2. 当前用例：
+   - `account.http`（14）
+   - `file.http`（7）
+   - `post.http`（17）
+   - `comment.http`（13）
+   - `like.http`（8）
+   - `admin.http`（36）
+3. 总计：95 条场景。
+4. 建议顺序：`account -> file -> post -> comment -> like -> admin`
 
-## 4. 接口回归文件
-1. `src/test/http/account.http`
-2. `src/test/http/post.http`
-3. `src/test/http/comment.http`
-4. `src/test/http/like.http`
-5. `src/test/http/admin.http`
-6. `src/test/http/http-client.env.json`
+## 7. 当前状态结论
+1. 后端主功能闭环已完成并完成核心回归。
+2. 头像已支持文件上传绑定（`fileID`）方式更新。
+3. 文件模块已支持绑定迁移与定时清理策略。
 
-## 5. 下一步计划（主线）
-1. 管理员用户启用/禁用接口
-2. 管理员帖子/评论管理接口
-3. 文档终版与答辩材料收口
+## 8. 下一步计划
+1. 完成前端页面与接口联调。
+2. 完成交付版答辩材料（架构图、演示脚本、风险预案）。
+3. 视时间补充自动化测试（MockMvc/集成测试）。
