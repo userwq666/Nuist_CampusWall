@@ -1,13 +1,13 @@
-﻿# Nuist CampusWall
+# Nuist CampusWall
 
-基于 `Spring Boot + Vue 3` 的校园墙项目（课程期末作业），当前后端已完成主链路闭环，进入交付收口阶段。
+基于 `Spring Boot + Vue 3` 的校园墙项目（课程期末作业），当前后端已完成主链路闭环，进入前端联调阶段。
 
 ## 1. 项目定位
-1. 面向校园社区场景，提供账号、发帖、评论、点赞、个人中心与管理员治理能力。
-2. 采用“后端先闭环”策略，确保可演示、可答辩、可扩展。
-3. 通过统一鉴权、统一返回、统一错误码降低联调成本。
+1. 面向校园社区，提供账号、发帖、评论、点赞、个人中心与管理员治理能力。
+2. 采用“后端先闭环”策略，保证可演示、可答辩、可扩展。
+3. 统一鉴权、统一异常、统一返回格式，降低前后端联调成本。
 
-## 2. 当前完成度（截至 2026-04-01）
+## 2. 当前完成度（截至 2026-04-03）
 ### 2.1 用户端接口
 1. 账号：`/api/account/register`、`/api/account/login`、`/api/account/my`、`/api/account/my/update`
 2. 帖子：`/api/post/create`、`/api/post/page`、`/api/post/notice/page`、`/api/post/my/page`、`/api/post/{id}`、`/api/post/update/{id}`、`/api/post/delete/{id}`
@@ -23,9 +23,9 @@
 
 ### 2.3 通用能力
 1. JWT 鉴权：`JwtUtil + JwtAuthInterceptor + UserContext`
-2. 统一响应：`Result<T>`
+2. 统一响应：`Result<T> -> { code, message, data }`
 3. 统一异常：`BusinessException + GlobalExceptionHandler`
-4. 统一错误码：`ErrorCode`
+4. 统一语义：HTTP 状态码 + 业务 `code` 双层表达
 5. 文件生命周期：`TEMP -> BOUND -> TEMP(解绑) -> DELETED(定时清理)`
 
 ## 3. 技术栈
@@ -35,31 +35,9 @@
 4. MySQL 8
 5. JWT（jjwt）
 6. Lombok
-7. Vue 3（前端开发中）
+7. Vue 3
 
-## 4. 项目结构
-1. `src/main/java/com/nuist_campuswall/controller`：接口层
-2. `src/main/java/com/nuist_campuswall/service`：业务层
-3. `src/main/java/com/nuist_campuswall/mapper`：数据访问层
-4. `src/main/java/com/nuist_campuswall/security`：JWT 与鉴权上下文
-5. `src/main/java/com/nuist_campuswall/common`：返回体、异常、错误码
-6. `src/main/resources/sql`：建表与种子脚本
-7. `src/test/http`：HTTP 回归用例
-8. `frontend`：前端目录（预留）
-9. `doc`：项目文档
-
-## 5. 快速启动（后端）
-1. 准备 MySQL 并配置 `application.properties`。
-2. 关注关键配置：数据库、JWT、文件存储路径、文件大小限制。
-3. 启动：
-   ```bash
-   mvn spring-boot:run
-   ```
-4. 启动后自动执行：
-   - `src/main/resources/sql/db_init.sql`
-   - `src/main/resources/sql/db_seed.sql`
-
-## 6. 回归测试
+## 4. 回归测试
 1. 用例目录：`src/test/http`
 2. 当前用例：
    - `account.http`（14）
@@ -71,12 +49,7 @@
 3. 总计：95 条场景。
 4. 建议顺序：`account -> file -> post -> comment -> like -> admin`
 
-## 7. 当前状态结论
+## 5. 状态结论
 1. 后端主功能闭环已完成并完成核心回归。
-2. 头像已支持文件上传绑定（`fileID`）方式更新。
-3. 文件模块已支持绑定迁移与定时清理策略。
-
-## 8. 下一步计划
-1. 完成前端页面与接口联调。
-2. 完成交付版答辩材料（架构图、演示脚本、风险预案）。
-3. 视时间补充自动化测试（MockMvc/集成测试）。
+2. 接口协议已回切为三段式，便于前端统一处理。
+3. 当前可直接进入前端页面联调。

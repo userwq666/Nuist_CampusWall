@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/src/main/java/com/nuist_campuswall/config/initCheck.java" value="e8fdae01-6c4d-4a8b-ad12-71bc3c3910b5" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/sql/db_init.sql" value="e8fdae01-6c4d-4a8b-ad12-71bc3c3910b5" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/sql/db_seed.sql" value="e8fdae01-6c4d-4a8b-ad12-71bc3c3910b5" />
-  </component>
-</project>

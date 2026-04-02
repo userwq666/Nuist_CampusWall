@@ -1,10 +1,10 @@
-﻿@base = {{host}}/api
+@base = {{host}}/api
 @token = {{token}}
 @myPostId = 1
 @postFileId = 1
 @postFileId2 = 2
 
-### A1) 上传帖子图片1（预期 code=0，返回 fileId；手动填入 @postFileId）
+### A1) 上传帖子图片1（预期 HTTP 200，code=0，返回 fileId）
 POST {{base}}/file/upload?fileType=POST
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
@@ -16,7 +16,7 @@ Content-Type: image/png
 < ../images/test_pass.png
 --WebAppBoundary--
 
-### A2) 上传帖子图片2（预期 code=0，返回 fileId；手动填入 @postFileId2）
+### A2) 上传帖子图片2（预期 HTTP 200，code=0，返回 fileId）
 POST {{base}}/file/upload?fileType=POST
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
@@ -28,7 +28,7 @@ Content-Type: image/png
 < ../images/test_pass.png
 --WebAppBoundary--
 
-### 1) 发帖成功（预期 code=0）
+### 1) 发帖成功（预期 HTTP 200，code=0）
 POST {{base}}/post/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -40,7 +40,7 @@ Authorization: Bearer {{token}}
   "fileID": {{postFileId}}
 }
 
-### 1.1) 重复绑定同一 fileId（第二次发帖，预期 code=417）
+### 1.1) 重复绑定同一 fileId（第二次发帖，预期 HTTP 409，code=417）
 POST {{base}}/post/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -52,7 +52,7 @@ Authorization: Bearer {{token}}
   "fileID": {{postFileId}}
 }
 
-### 2) 发帖失败（不带 token，预期 code=406）
+### 2) 发帖失败（不带 token，预期 HTTP 401，code=406）
 POST {{base}}/post/create
 Content-Type: application/json
 
@@ -62,7 +62,7 @@ Content-Type: application/json
   "imageUrl": null
 }
 
-### 3) 发帖失败（标题为空，预期 code=422）
+### 3) 发帖失败（标题为空，预期 HTTP 422，code=422）
 POST {{base}}/post/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -73,23 +73,23 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 4) 公开帖子分页（预期 code=0）
+### 4) 公开帖子分页（预期 HTTP 200，code=0）
 GET {{base}}/post/page?pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
-### 4.1) 公告分页（预期 code=0）
+### 4.1) 公告分页（预期 HTTP 200，code=0）
 GET {{base}}/post/notice/page?pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
-### 5) 我的帖子分页（预期 code=0）
+### 5) 我的帖子分页（预期 HTTP 200，code=0）
 GET {{base}}/post/my/page?pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
-### 6) 帖子详情成功（预期 code=0）
+### 6) 帖子详情成功（预期 HTTP 200，code=0）
 GET {{base}}/post/{{myPostId}}
 Authorization: Bearer {{token}}
 
-### 7) 修改我的帖子成功（预期 code=0，触发换图）
+### 7) 修改我的帖子成功（预期 HTTP 200，code=0，触发换图）
 POST {{base}}/post/update/{{myPostId}}
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -101,7 +101,7 @@ Authorization: Bearer {{token}}
   "fileId": {{postFileId2}}
 }
 
-### 8) 修改帖子参数非法（预期 code=422）
+### 8) 修改帖子参数非法（预期 HTTP 422，code=422）
 POST {{base}}/post/update/{{myPostId}}
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -112,7 +112,7 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 9) 修改不存在帖子（预期 code=409）
+### 9) 修改不存在帖子（预期 HTTP 404，code=409）
 POST {{base}}/post/update/999999
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -123,16 +123,17 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 10) 删除我的帖子成功（预期 code=0）
+### 10) 删除我的帖子成功（预期 HTTP 200，code=0）
 POST {{base}}/post/delete/{{myPostId}}
 Authorization: Bearer {{token}}
 
 ### 10.1) 删除后应触发图片转TEMP（需数据库验证 file_asset.status=TEMP）
 
-### 11) 删除不存在帖子（预期 code=409）
+### 11) 删除不存在帖子（预期 HTTP 404，code=409）
 POST {{base}}/post/delete/999999
 Authorization: Bearer {{token}}
 
-### 12) 删除他人帖子（预期 code=412，需准备他人帖子ID）
+### 12) 删除他人帖子（预期 HTTP 403，code=412，需准备他人帖子ID）
 POST {{base}}/post/delete/3
 Authorization: Bearer {{token}}
+

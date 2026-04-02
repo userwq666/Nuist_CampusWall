@@ -1,7 +1,7 @@
-﻿@base = {{host}}/api
+@base = {{host}}/api
 @token = {{token}}
 
-### 1) 点赞成功（预期 code=0）
+### 1) 点赞成功（预期 HTTP 200，code=0）
 POST {{base}}/like/do
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -11,7 +11,7 @@ Authorization: Bearer {{token}}
   "targetId": 1
 }
 
-### 2) 重复点赞（预期 code=411）
+### 2) 重复点赞（预期 HTTP 409，code=411）
 POST {{base}}/like/do
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -21,7 +21,7 @@ Authorization: Bearer {{token}}
   "targetId": 1
 }
 
-### 3) 取消点赞成功（预期 code=0）
+### 3) 取消点赞成功（预期 HTTP 200，code=0）
 POST {{base}}/like/undo
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -31,7 +31,7 @@ Authorization: Bearer {{token}}
   "targetId": 1
 }
 
-### 4) 重复取消点赞（预期 code=422）
+### 4) 重复取消点赞（预期 HTTP 422，code=422）
 POST {{base}}/like/undo
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -41,7 +41,7 @@ Authorization: Bearer {{token}}
   "targetId": 1
 }
 
-### 5) 未登录点赞（预期 code=406）
+### 5) 未登录点赞（预期 HTTP 401，code=406）
 POST {{base}}/like/do
 Content-Type: application/json
 
@@ -50,7 +50,7 @@ Content-Type: application/json
   "targetId": 1
 }
 
-### 6) 帖子目标不存在（预期 code=409）
+### 6) 帖子目标不存在（预期 HTTP 404，code=409）
 POST {{base}}/like/do
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -60,7 +60,7 @@ Authorization: Bearer {{token}}
   "targetId": 999999
 }
 
-### 7) 评论点赞目标不存在（预期 code=410）
+### 7) 评论点赞目标不存在（预期 HTTP 404，code=410）
 POST {{base}}/like/do
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -70,7 +70,7 @@ Authorization: Bearer {{token}}
   "targetId": 999999
 }
 
-### 8) 评论取消点赞目标不存在（预期 code=410）
+### 8) 评论取消点赞目标不存在（预期 HTTP 404，code=410）
 POST {{base}}/like/undo
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -79,3 +79,4 @@ Authorization: Bearer {{token}}
   "targetType": "COMMENT",
   "targetId": 999999
 }
+

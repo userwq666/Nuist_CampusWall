@@ -1,10 +1,10 @@
-﻿@base = {{host}}/api
+@base = {{host}}/api
 @token = {{token}}
 @postId = 1
 @myCommentId = 1
 @commentFileId = 5
 
-### A1) 上传评论图片（预期 code=0，返回 fileId；手动填入 @commentFileId）
+### A1) 上传评论图片（预期 HTTP 200，code=0，返回 fileId）
 POST {{base}}/file/upload?fileType=COMMENT
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
@@ -16,7 +16,7 @@ Content-Type: image/png
 < ../images/test_pass.png
 --WebAppBoundary--
 
-### 1) 评论成功（预期 code=0）
+### 1) 评论成功（预期 HTTP 200，code=0）
 POST {{base}}/comment/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -30,7 +30,7 @@ Authorization: Bearer {{token}}
   "fileId": {{commentFileId}}
 }
 
-### 1.1) 重复绑定同一 fileId（第二次评论，预期 code=417）
+### 1.1) 重复绑定同一 fileId（第二次评论，预期 HTTP 409，code=417）
 POST {{base}}/comment/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -44,7 +44,7 @@ Authorization: Bearer {{token}}
   "fileId": {{commentFileId}}
 }
 
-### 2) 未登录评论（预期 code=406）
+### 2) 未登录评论（预期 HTTP 401，code=406）
 POST {{base}}/comment/create
 Content-Type: application/json
 
@@ -56,7 +56,7 @@ Content-Type: application/json
   "imageUrl": null
 }
 
-### 3) 参数非法（预期 code=422）
+### 3) 参数非法（预期 HTTP 422，code=422）
 POST {{base}}/comment/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -69,7 +69,7 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 4) 目标帖子不存在（预期 code=409）
+### 4) 目标帖子不存在（预期 HTTP 404，code=409）
 POST {{base}}/comment/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -82,28 +82,29 @@ Authorization: Bearer {{token}}
   "imageUrl": null
 }
 
-### 5) 公开评论分页（预期 code=0）
+### 5) 公开评论分页（预期 HTTP 200，code=0）
 GET {{base}}/comment/page?postId={{postId}}&pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
-### 6) 评论分页参数非法（预期 code=422）
+### 6) 评论分页参数非法（预期 HTTP 422，code=422）
 GET {{base}}/comment/page?postId={{postId}}&pageNum=0&pageSize=20
 Authorization: Bearer {{token}}
 
-### 7) 我的评论分页（预期 code=0）
+### 7) 我的评论分页（预期 HTTP 200，code=0）
 GET {{base}}/comment/my/page?pageNum=1&pageSize=5
 Authorization: Bearer {{token}}
 
-### 8) 删除我的评论成功（预期 code=0）
+### 8) 删除我的评论成功（预期 HTTP 200，code=0）
 POST {{base}}/comment/delete/{{myCommentId}}
 Authorization: Bearer {{token}}
 
 ### 8.1) 删除后应触发图片转TEMP（需数据库验证 file_asset.status=TEMP）
 
-### 9) 删除不存在评论（预期 code=410）
+### 9) 删除不存在评论（预期 HTTP 404，code=410）
 POST {{base}}/comment/delete/999999
 Authorization: Bearer {{token}}
 
-### 10) 删除他人评论（预期 code=412，需准备他人评论ID）
+### 10) 删除他人评论（预期 HTTP 403，code=412，需准备他人评论ID）
 POST {{base}}/comment/delete/3
 Authorization: Bearer {{token}}
+

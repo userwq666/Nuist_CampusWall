@@ -9,25 +9,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Result<T> {
-    private Integer code;  // 状态码 0成功 ,!0失败
-    private String message;  //提示信息
-    private T data;          //业务数据
+    private Integer code;    // 业务状态码：0成功，非0失败
+    private String message;  // 提示信息
+    private T data;          // 业务数据
 
-    //成功
-    public static <T> Result<T> success(T data){
+    // 成功
+    public static <T> Result<T> success(T data) {
         return new Result<>(0, "success", data);
     }
 
-    //失败
-    public static <T> Result<T> fail(Integer code, String message){
+    // 失败（带业务码）
+    public static <T> Result<T> fail(Integer code, String message) {
         return new Result<>(code, message, null);
     }
 
-    public static <T> Result<T> fail(Integer code, String message, T data){
-        return new Result<>(code, message, data);
-    }
-
-    public static <T> Result<T> fail(String message){     //默认失败，状态码为1
+    // 失败（默认业务码）
+    public static <T> Result<T> fail(String message) {
         return new Result<>(1, message, null);
     }
 }
