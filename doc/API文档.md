@@ -1,6 +1,6 @@
-# Nuist CampusWall API 文档（V3.3）
+# Nuist CampusWall API 文档（V3.4）
 
-## 1. 统一返回格式（三段式）
+## 1. 统一返回格式
 ```json
 {
   "code": 0,
@@ -8,19 +8,20 @@
   "data": {}
 }
 ```
-说明：
-1. 成功：`code=0`。
-2. 失败：`code!=0`，`message` 为错误说明。
-3. 协议层仍使用 HTTP 状态码表达错误大类。
 
-## 2. 鉴权说明
-1. 受保护接口统一要求请求头：`Authorization: Bearer <token>`。
+规则：
+1. `code=0`：业务成功。
+2. `code!=0`：业务失败。
+3. 失败场景同时配合 HTTP 状态码表达错误类别。
+
+## 2. 鉴权规则
+1. 受保护接口要求：`Authorization: Bearer <token>`。
 2. 放行接口：
    - `POST /api/account/register`
    - `POST /api/account/login`
-3. 管理员接口前缀：`/api/admin/**`，要求角色 `ADMIN`。
+3. 管理员接口前缀：`/api/admin/**`，要求 `Role.ADMIN`。
 
-## 3. 核心接口
+## 3. 用户端接口
 ### 3.1 account
 1. `POST /api/account/register`
 2. `POST /api/account/login`
@@ -51,7 +52,7 @@
 1. `POST /api/like/do`
 2. `POST /api/like/undo`
 
-### 3.6 admin
+## 4. 管理端接口
 1. `GET /api/admin/ping`
 2. `GET /api/admin/user/page`
 3. `POST /api/admin/user/enable/{userId}`
@@ -65,15 +66,7 @@
 11. `POST /api/admin/comment/enable/{commentId}`
 12. `POST /api/admin/comment/disable/{commentId}`
 
-## 4. 推荐联调断言
-1. 先看 HTTP 状态码（200/401/403/404/409/413/415/422/500）。
-2. 再看响应体 `code`（例如 `0/406/412/409/410/417`）。
-3. 页面提示优先使用 `message`。
-
-## 5. 回归用例对应
-1. `src/test/http/account.http`
-2. `src/test/http/file.http`
-3. `src/test/http/post.http`
-4. `src/test/http/comment.http`
-5. `src/test/http/like.http`
-6. `src/test/http/admin.http`
+## 5. 联调断言建议
+1. 先断言 HTTP 状态码。
+2. 再断言 `code`。
+3. 页面提示优先显示 `message`。
