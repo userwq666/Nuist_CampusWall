@@ -13,31 +13,45 @@ export const useAuthStore = defineStore('auth', {
      */
     state: () => ({
         // token 状态：存储用户认证令牌
-        // 优先从 localStorage 读取（实现页面刷新后保持登录状态），如果没有则返回空字符串
-        token: localStorage.getItem('token') || ''
+        token: localStorage.getItem('token') || '',
+        // user 状态：存储用户信息
+        userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null')
     }),
-    
+
+
+    /**
+     * getters: 获取状态数据的计算属性
+     * 支持同步和异步操作，this 指向 store 状态数据对象
+     */
+    getters: {
+        // 判断用户是否已登录（通过检查 token 是否存在）
+        isLogin: (state) => !!state.token,
+        // 判断用户是否为管理员（检查 userInfo 中的 role 字段）
+        isAdmin: (state) => state.userInfo?.role === 'ADMIN'
+    },
+
     /**
      * actions: 包含可以修改状态的方法
      * 支持同步和异步操作，this 指向 store 实例本身
      */
     actions: {
-        /**
-         * 设置用户登录 token
-         * @param {String} token - 后端返回的认证令牌
-         * 作用：同时更新 store 中的 token 状态和浏览器的 localStorage
-         */
-        setToken(token) {
+        setLogin(token, userInfo){
+            this.token = token
+            this.userInfo = userInfo
+            localStorage.setItem('token', token)
+            localStorage.setItem('userInfo', JSON.stringify(userInfo))
+        },
+
+        setToken(token){
             this.token = token
             localStorage.setItem('token', token)
         },
-        /**
-         * 清除用户登录 token（用于退出登录）
-         * 作用：清空 store 和 localStorage 中的 token 信息
-         */
-        clearToken() {
+
+        clearToken(){
             this.token = ''
+           this.userInfo = null
             localStorage.removeItem('token')
+            localStorage.removeItem('userInfo')
         }
     }
 })

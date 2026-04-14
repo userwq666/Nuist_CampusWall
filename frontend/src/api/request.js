@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 统一请求实例
 const request = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: '/api',
   timeout: 10000
 })
 

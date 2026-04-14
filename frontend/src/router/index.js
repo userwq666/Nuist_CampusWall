@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/account/LoginView.vue'
 import RegisterView from '../views/account/RegisterView.vue'
 import PostListView from '../views/post/PostListView.vue'
+import PostDetailView from "../views/post/PostDetailView.vue";
+import AdminView from "../views/admin/AdminView.vue";
 
 /**
  * 路由规则配置数组
@@ -18,7 +20,11 @@ const routes = [
     // 注册页面路由
     { path: '/register', component: RegisterView },
     // 帖子列表页面路由
-    { path: '/post', component: PostListView }
+    { path: '/post', component: PostListView },
+    // 帖子详情页面路由
+    { path: '/post/:id', component: PostDetailView },
+    // 管理页面路由
+    { path: '/admin', component: AdminView }
 ]
 
 /**
