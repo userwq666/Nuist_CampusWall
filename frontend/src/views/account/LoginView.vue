@@ -5,6 +5,7 @@
     <input v-model="form.username" placeholder="用户名"/>
     <input v-model="form.password" placeholder="密码" type="password"/>
     <button @click="onLogin">登录</button>
+    <button @click="onRegister">注册</button>
   </div>
 </template>
 
@@ -44,4 +45,12 @@ const onLogin = async () => {
     alert(e.message || '登录失败')
   }
 }
+
+
+// 注册方法
+const onRegister = async () => {
+  router.push('/register')
+}
+
+
 </script>

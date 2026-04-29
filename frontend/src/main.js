@@ -21,3 +21,9 @@ app.use(ElementPlus)
 // 将应用挂载到 HTML 页面中的 id 为 'app' 的元素上
 app.mount('#app')
 
+//清空缓存
+if (import.meta.env.DEV) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+}
+

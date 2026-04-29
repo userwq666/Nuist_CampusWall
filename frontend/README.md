@@ -30,3 +30,4 @@ npm run build
 3. `frontend/doc/开发计划.md`
 4. `frontend/doc/样式与组件规范.md`
 5. `frontend/doc/调试与排障.md`
+6. `frontend/doc/开发日志.md`
