@@ -19,7 +19,9 @@ public class WebMvcConfig implements WebMvcConfigurer {   //webconfigurer接口�
                 .addPathPatterns("/api/**")                 //添加拦截路径
                 .excludePathPatterns(                       //添加排除路径
                         "/api/account/register",
-                        "/api/account/login"
+                        "/api/account/login",
+                        "/api/post/page",
+                        "/api/post/notice/page"
                 );
     }
 }
