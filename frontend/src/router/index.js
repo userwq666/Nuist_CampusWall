@@ -16,7 +16,7 @@ import { useAuthStore } from '../stores/auth'
  */
 const routes = [
     // 默认重定向：访问根路径 '/' 时自动跳转到 '/post' 帖子页面
-    { path: '/', redirect: '/post' },
+    { path: '/', redirect: '/post',component: PostListView },
     // 登录页面路由
     { path: '/login', component: LoginView ,meta: { guestOnly: true }},
     // 注册页面路由
