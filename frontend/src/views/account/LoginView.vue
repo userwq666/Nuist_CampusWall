@@ -4,7 +4,7 @@
       <div class="auth-left">
         <div class="auth-illustration">
           <div class="auth-logo">校园墙</div>
-          <p class="auth-slogan">分享校园的每一刻</p>
+          <p class="auth-slogan">南信大 · 分享校园的每一刻</p>
         </div>
       </div>
       <div class="auth-right">
@@ -61,7 +61,7 @@ const onLogin = async () => {
 .auth-page {
   min-height: calc(100vh - 56px);
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #FFF8F5 0%, #FFF0EC 50%, #FFE8E0 100%);
+  background: linear-gradient(135deg, #F0F4FA 0%, #E8ECF3 50%, #DCE3EE 100%);
   padding: 20px;
 }
 .auth-card {
@@ -70,7 +70,7 @@ const onLogin = async () => {
   box-shadow: var(--shadow-lg); overflow: hidden;
 }
 .auth-left {
-  flex: 1; background: linear-gradient(135deg, #FF6B4A, #FF8A6F);
+  flex: 1; background: linear-gradient(135deg, #004098, #1A5CAD);
   display: flex; align-items: center; justify-content: center;
   padding: 40px; min-height: 400px;
 }

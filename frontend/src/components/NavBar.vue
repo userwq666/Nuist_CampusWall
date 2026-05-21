@@ -2,7 +2,7 @@
   <header class="navbar">
     <div class="navbar-inner">
       <div class="navbar-left">
-        <router-link to="/post" class="logo">校园墙</router-link>
+        <router-link to="/post" class="logo"><span class="logo-nuist">NUIST</span> 校园墙</router-link>
       </div>
       <div class="navbar-center">
         <el-input v-model="searchText" placeholder="搜索帖子..." :prefix-icon="Search" class="search-input" clearable @keyup.enter="doSearch" @clear="doClearSearch" />
@@ -101,7 +101,8 @@ function handleLogout() { showMobileMenu.value = false; logout() }
   padding: 0 20px; gap: 24px;
 }
 .navbar-left { flex-shrink: 0; }
-.logo { font-size: 22px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+.logo { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
+.logo-nuist { color: var(--primary); font-weight: 800; letter-spacing: 1px; }
 .navbar-center { flex: 1; max-width: 400px; }
 .search-input { --el-input-border-radius: 20px; --el-input-bg-color: #F5F5F5; }
 .search-input :deep(.el-input__wrapper) { background: #F5F5F5; box-shadow: none !important; }

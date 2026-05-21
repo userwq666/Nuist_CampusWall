@@ -220,7 +220,7 @@ onMounted(loadProfile)
   padding: 28px 24px;
   margin: 0 24px 8px;
   margin-top: 20px;
-  background: linear-gradient(135deg, #FFF8F5, #FFF0EC);
+  background: linear-gradient(135deg, #F0F4FA, #E8ECF3);
   border-radius: var(--radius-md);
 }
 
