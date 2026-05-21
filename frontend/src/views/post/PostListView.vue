@@ -55,7 +55,7 @@
       <div v-else class="waterfall">
         <div v-for="post in filteredPosts" :key="post.id" class="post-card" @click="goDetail(post.id)">
           <div class="card-image">
-            <img v-if="post.imageUrl" :src="post.imageUrl" :alt="post.title" />
+            <img v-if="post.imageUrl" :src="post.imageUrl" :alt="post.title" @error="onImageError($event)" />
             <div v-else class="card-image-placeholder">
               <el-icon :size="32" color="#CCC"><Picture /></el-icon>
             </div>
@@ -100,7 +100,7 @@
             :before-upload="handleBeforeUpload"
             :auto-upload="false"
             :limit="1"
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.gif,.webp"
             list-type="picture-card"
             v-model:file-list="createForm.fileList"
           >
@@ -211,11 +211,10 @@ const createForm = reactive({ title: '', content: '', fileList: [] })
 const createLoading = ref(false)
 const fileToUpload = ref(null)
 
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const handleBeforeUpload = (file) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt5M = file.size / 1024 / 1024 < 5
-  if (!isImage) { ElMessage.warning('只能上传图片文件'); return false }
-  if (!isLt5M) { ElMessage.warning('图片大小不能超过 5MB'); return false }
+  if (!ALLOWED_TYPES.includes(file.type)) { ElMessage.warning('仅支持 JPG/PNG/GIF/WebP 格式'); return false }
+  if (file.size / 1024 / 1024 > 5) { ElMessage.warning('图片大小不能超过 5MB'); return false }
   fileToUpload.value = file
   return true
 }
@@ -242,6 +241,8 @@ const clearSearch = () => {
   isSearching.value = false
   router.push({ path: '/post' })
 }
+
+const onImageError = (e) => { e.target.style.display = 'none' }
 
 const onCreateClosed = () => {
   createForm.title = ''

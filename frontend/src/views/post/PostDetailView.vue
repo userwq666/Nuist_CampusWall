@@ -21,7 +21,7 @@
 
       <!-- Post Image -->
       <div v-if="post.imageUrl" class="detail-image">
-        <img :src="post.imageUrl" :alt="post.title" />
+        <img :src="post.imageUrl" :alt="post.title" @error="onImageError" />
       </div>
 
       <!-- Post Content -->
@@ -69,25 +69,25 @@
       <div class="comments-section">
         <h3 class="comments-title">评论 ({{ totalComments }})</h3>
         <div v-if="comments.length === 0" class="no-comments">暂无评论，来说点什么吧</div>
-        <div v-for="comment in comments" :key="comment.id" class="comment-item">
+        <div v-for="(comment, idx) in comments" :key="comment.id" class="comment-item">
           <el-avatar :size="32">{{ comment.userId }}</el-avatar>
           <div class="comment-body">
             <div class="comment-header">
               <span class="comment-author">@{{ comment.userId }}</span>
+              <span class="comment-floor">#{{ idx + 1 }}</span>
               <span class="comment-time">{{ formatTime(comment.createTime) }}</span>
             </div>
-            <div class="comment-content">{{ comment.content }}</div>
+            <div class="comment-content">
+              <template v-if="comment.replyToUserId">
+                <span class="reply-tag">回复</span>
+                <span class="reply-author">@{{ comment.replyToUserId }}</span>
+                ：{{ comment.content }}
+              </template>
+              <template v-else>{{ comment.content }}</template>
+            </div>
             <div class="comment-actions">
               <span class="comment-action" @click="startReply(comment)">回复</span>
               <span v-if="isMyComment(comment)" class="comment-action delete-action" @click="deleteComment(comment.id)">删除</span>
-            </div>
-            <!-- Replies -->
-            <div v-if="comment.replies && comment.replies.length > 0" class="replies">
-              <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-                <span class="reply-author">@{{ reply.userId }}</span>
-                <span v-if="reply.replyToUserId" class="reply-to">回复 @{{ reply.replyToUserId }}</span>
-                <span class="reply-text">: {{ reply.content }}</span>
-              </div>
             </div>
           </div>
         </div>
@@ -188,11 +188,10 @@ const loadComments = async (reset = false) => {
     const data = res.data || {}
     totalComments.value = data.total || 0
     const records = data.records || []
-    // Group replies under parent comments
     if (reset) {
-      comments.value = buildCommentTree(records)
+      comments.value = records
     } else {
-      buildCommentTree(records, true)
+      comments.value.push(...records)
     }
     hasMoreComments.value = records.length >= commentPageSize
   } catch (e) {
@@ -200,32 +199,12 @@ const loadComments = async (reset = false) => {
   }
 }
 
-const buildCommentTree = (records, append = false) => {
-  const parents = records.filter(c => !c.replyToCommentId)
-  parents.forEach(p => {
-    p.replies = records.filter(c => c.replyToCommentId === p.id)
-  })
-  if (append) {
-    // Merge with existing comments: add new parents, append replies to existing parents
-    parents.forEach(newP => {
-      const existing = comments.value.find(c => c.id === newP.id)
-      if (existing) {
-        if (newP.replies && newP.replies.length > 0) {
-          existing.replies = [...(existing.replies || []), ...newP.replies]
-        }
-      } else {
-        comments.value.push(newP)
-      }
-    })
-    return []
-  }
-  return parents
-}
-
 const loadMoreComments = () => {
   commentPage.value++
   loadComments(false)
 }
+
+const onImageError = (e) => { e.target.style.display = 'none' }
 
 const toggleLike = async () => {
   if (!isLoggedIn.value) { router.push('/login'); return }
@@ -456,8 +435,11 @@ watch(() => route.params.id, loadPost)
   margin-bottom: 4px;
 }
 .comment-author { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.comment-floor { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
 .comment-time { font-size: 11px; color: var(--text-tertiary); }
 .comment-content { font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
+.reply-tag { font-size: 12px; color: var(--text-tertiary); margin-right: 2px; }
+.comment-content .reply-author { font-weight: 500; color: var(--primary); }
 .comment-actions { display: flex; gap: 12px; }
 .comment-action {
   font-size: 12px;
@@ -466,21 +448,6 @@ watch(() => route.params.id, loadPost)
 }
 .comment-action:hover { color: var(--primary); }
 .delete-action:hover { color: #E74C3C; }
-
-.replies {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-.reply-item {
-  font-size: 13px;
-  line-height: 1.6;
-  padding: 4px 0;
-}
-.reply-author { font-weight: 500; color: var(--primary); }
-.reply-to { color: var(--text-secondary); }
-.reply-text { color: var(--text-primary); }
 
 .load-more-comments {
   text-align: center;
