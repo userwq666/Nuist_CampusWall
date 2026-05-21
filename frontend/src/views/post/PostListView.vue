@@ -55,7 +55,7 @@
       <div v-else class="waterfall">
         <div v-for="post in filteredPosts" :key="post.id" class="post-card" @click="goDetail(post.id)">
           <div class="card-image">
-            <img v-if="post.imageUrl" :src="post.imageUrl" :alt="post.title" @error="onImageError($event)" />
+            <img v-if="post.imageUrl && !failedImages.has(post.id)" :src="post.imageUrl" :alt="post.title" @error="onImageError(post.id)" />
             <div v-else class="card-image-placeholder">
               <el-icon :size="32" color="#CCC"><Picture /></el-icon>
             </div>
@@ -136,6 +136,9 @@ const errorMsg = ref('')
 const hasMore = ref(true)
 const searchText = ref('')
 const isSearching = ref(false)
+const failedImages = ref(new Set())
+
+const onImageError = (postId) => { failedImages.value.add(postId) }
 
 // Filtered posts based on search
 const filteredPosts = computed(() => {
@@ -227,10 +230,14 @@ const doCreatePost = async () => {
     if (fileToUpload.value) {
       const res = await uploadFileApi(fileToUpload.value, 'POST')
       fileId = res.data
+      if (!fileId) { ElMessage.warning('上传成功但未获取到文件 ID'); return }
     }
-    await CreatePostApi({ title: createForm.title.trim(), content: createForm.content.trim(), fileID: fileId })
+    const payload = { title: createForm.title.trim(), content: createForm.content.trim() }
+    if (fileId) payload.fileID = fileId
+    await CreatePostApi(payload)
     showCreateDialog.value = false
     loadPosts(true)
+    ElMessage.success('发布成功')
   } catch (e) {
     ElMessage.error(e.message || '发帖失败')
   } finally { createLoading.value = false }
@@ -241,8 +248,6 @@ const clearSearch = () => {
   isSearching.value = false
   router.push({ path: '/post' })
 }
-
-const onImageError = (e) => { e.target.style.display = 'none' }
 
 const onCreateClosed = () => {
   createForm.title = ''
