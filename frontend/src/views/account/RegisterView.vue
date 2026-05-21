@@ -33,26 +33,27 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { registerApi } from '../../api/account'
 import { User, Lock, EditPen, Message } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const form = reactive({ username: '', password: '', confirmPassword: '', nickname: '', educationEmail: '' })
 const loading = ref(false)
 
 const onRegister = async () => {
-  if (!form.username || !form.password || !form.nickname || !form.educationEmail) { alert('请完整填写注册信息'); return }
-  if (form.username.length < 3) { alert('用户名长度至少为 3 个字符'); return }
-  if (form.username.length > 20) { alert('用户名长度不能超过 20 个字符'); return }
-  if (form.username.match(/[^a-zA-Z0-9]/)) { alert('用户名只能包含字母和数字'); return }
-  if (form.password.length < 6) { alert('密码长度至少为 6 个字符'); return }
-  if (form.password !== form.confirmPassword) { alert('两次密码不一致'); return }
+  if (!form.username || !form.password || !form.nickname || !form.educationEmail) { ElMessage.warning('请完整填写注册信息'); return }
+  if (form.username.length < 3) { ElMessage.warning('用户名长度至少为 3 个字符'); return }
+  if (form.username.length > 20) { ElMessage.warning('用户名长度不能超过 20 个字符'); return }
+  if (form.username.match(/[^a-zA-Z0-9]/)) { ElMessage.warning('用户名只能包含字母和数字'); return }
+  if (form.password.length < 6) { ElMessage.warning('密码长度至少为 6 个字符'); return }
+  if (form.password !== form.confirmPassword) { ElMessage.warning('两次密码不一致'); return }
   const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.edu(\.[A-Za-z0-9-]+)*$/i
-  if (!emailRegex.test(form.educationEmail)) { alert('请使用教育邮箱（域名需包含 .edu）'); return }
+  if (!emailRegex.test(form.educationEmail)) { ElMessage.warning('请使用教育邮箱（域名需包含 .edu）'); return }
   loading.value = true
   try {
     await registerApi({ username: form.username.trim(), password: form.password, nickname: form.nickname.trim(), educationEmail: form.educationEmail.trim() })
-    alert('注册成功，请登录')
+    ElMessage.warning('注册成功，请登录')
     router.push('/login')
-  } catch (e) { alert(e.message || '注册失败') }
+  } catch (e) { ElMessage.warning(e.message || '注册失败') }
   finally { loading.value = false }
 }
 </script>

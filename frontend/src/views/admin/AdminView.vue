@@ -26,7 +26,7 @@
       <div v-if="activeMenu === 'users'" class="admin-table-wrap">
         <h2>用户管理</h2>
         <el-table :data="users" stripe v-loading="usersLoading" style="width:100%">
-          <el-table-column prop="id" label="ID" width="70" />
+          <el-table-column prop="userId" label="ID" width="70" />
           <el-table-column prop="username" label="用户名" width="120" />
           <el-table-column prop="nickname" label="昵称" width="120" />
           <el-table-column prop="educationEmail" label="邮箱" min-width="180" />
@@ -59,15 +59,13 @@
       <div v-if="activeMenu === 'posts'" class="admin-table-wrap">
         <h2>帖子管理</h2>
         <el-table :data="posts" stripe v-loading="postsLoading" style="width:100%">
-          <el-table-column prop="id" label="ID" width="70" />
+          <el-table-column prop="postId" label="ID" width="70" />
           <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
           <el-table-column prop="userId" label="作者ID" width="80" />
           <el-table-column label="状态" width="80">
             <template #default="{ row }"><el-tag :type="row.status==='ENABLE'?'success':'warning'" size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
-          <el-table-column label="时间" width="160">
-            <template #default="{ row }">{{ row.createTime }}</template>
-          </el-table-column>
+
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <el-button size="small" @click="showPostDetail(row)">详情</el-button>
@@ -92,7 +90,7 @@
       <div v-if="activeMenu === 'comments'" class="admin-table-wrap">
         <h2>评论管理</h2>
         <el-table :data="comments" stripe v-loading="commentsLoading" style="width:100%">
-          <el-table-column prop="id" label="ID" width="70" />
+          <el-table-column prop="commentId" label="ID" width="70" />
           <el-table-column prop="content" label="内容" min-width="250" show-overflow-tooltip />
           <el-table-column prop="postId" label="所属帖子" width="100" />
           <el-table-column prop="userId" label="作者ID" width="80" />
@@ -144,13 +142,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {
-  adminUserPageApi, adminEnableUserApi, adminDisableUserApi,
+  adminPingApi, adminUserPageApi, adminEnableUserApi, adminDisableUserApi,
   adminPostPageApi, adminPostDetailApi, adminEnablePostApi, adminDisablePostApi,
   adminCommentPageApi, adminCommentDetailApi, adminEnableCommentApi, adminDisableCommentApi
 } from '../../api/admin'
 import { User, Document, ChatDotSquare } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
+const router = useRouter()
 const activeMenu = ref('users')
 
 // Users
@@ -195,19 +196,24 @@ const loadUsers = async () => {
     const data = res.data || {}
     users.value = data.records || []
     userTotal.value = data.total || 0
-  } catch (e) { /* ignore */ }
-  finally { usersLoading.value = false }
+  } catch (e) {
+    console.error('User load failed:', e)
+  } finally { usersLoading.value = false }
 }
 
 const toggleUser = async (row) => {
   try {
     if (row.status === 'ENABLE') {
-      await adminDisableUserApi(row.id)
+      await adminDisableUserApi(row.userId)
+      ElMessage.success('已禁用用户')
     } else {
-      await adminEnableUserApi(row.id)
+      await adminEnableUserApi(row.userId)
+      ElMessage.success('已启用用户')
     }
     loadUsers()
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    ElMessage.error(e.message || '操作失败')
+  }
 }
 
 // Posts
@@ -218,13 +224,14 @@ const loadPosts = async () => {
     const data = res.data || {}
     posts.value = data.records || []
     postTotal.value = data.total || 0
-  } catch (e) { /* ignore */ }
-  finally { postsLoading.value = false }
+  } catch (e) {
+    console.error('Post load failed:', e)
+  } finally { postsLoading.value = false }
 }
 
 const showPostDetail = async (row) => {
   try {
-    const res = await adminPostDetailApi(row.id)
+    const res = await adminPostDetailApi(row.postId)
     postDetailData.value = res.data || row
     postDialogVisible.value = true
   } catch (e) { postDetailData.value = row; postDialogVisible.value = true }
@@ -232,10 +239,15 @@ const showPostDetail = async (row) => {
 
 const togglePost = async (row) => {
   try {
-    if (row.status === 'ENABLE') await adminDisablePostApi(row.id)
-    else await adminEnablePostApi(row.id)
+    if (row.status === 'ENABLE') {
+      await adminDisablePostApi(row.postId)
+      ElMessage.success('已禁用帖子')
+    } else {
+      await adminEnablePostApi(row.postId)
+      ElMessage.success('已启用帖子')
+    }
     loadPosts()
-  } catch (e) { /* ignore */ }
+  } catch (e) { ElMessage.error(e.message || '操作失败') }
 }
 
 // Comments
@@ -246,13 +258,14 @@ const loadComments = async () => {
     const data = res.data || {}
     comments.value = data.records || []
     commentTotal.value = data.total || 0
-  } catch (e) { /* ignore */ }
-  finally { commentsLoading.value = false }
+  } catch (e) {
+    console.error('Comment load failed:', e)
+  } finally { commentsLoading.value = false }
 }
 
 const showCommentDetail = async (row) => {
   try {
-    const res = await adminCommentDetailApi(row.id)
+    const res = await adminCommentDetailApi(row.commentId)
     commentDetailData.value = res.data || row
     commentDialogVisible.value = true
   } catch (e) { commentDetailData.value = row; commentDialogVisible.value = true }
@@ -260,13 +273,25 @@ const showCommentDetail = async (row) => {
 
 const toggleComment = async (row) => {
   try {
-    if (row.status === 'ENABLE') await adminDisableCommentApi(row.id)
-    else await adminEnableCommentApi(row.id)
+    if (row.status === 'ENABLE') {
+      await adminDisableCommentApi(row.commentId)
+      ElMessage.success('已禁用评论')
+    } else {
+      await adminEnableCommentApi(row.commentId)
+      ElMessage.success('已启用评论')
+    }
     loadComments()
-  } catch (e) { /* ignore */ }
+  } catch (e) { ElMessage.error(e.message || '操作失败') }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    await adminPingApi()
+  } catch (e) {
+    ElMessage.error('管理员权限验证失败')
+    router.push('/post')
+    return
+  }
   loadUsers()
 })
 </script>

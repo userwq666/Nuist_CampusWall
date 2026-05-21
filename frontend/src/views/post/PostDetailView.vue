@@ -25,10 +25,18 @@
       </div>
 
       <!-- Post Content -->
-      <div class="detail-content" v-html="post.content"></div>
+      <div class="detail-content">{{ post.content }}</div>
 
       <!-- Actions -->
       <div class="detail-actions">
+        <button class="action-btn edit-btn" v-if="isOwner" @click="openEditDialog">
+          <el-icon><EditPen /></el-icon>
+          <span>编辑</span>
+        </button>
+        <button class="action-btn delete-btn" v-if="isOwner" @click="doDeletePost">
+          <el-icon><Delete /></el-icon>
+          <span>删除</span>
+        </button>
         <button class="action-btn like-btn" :class="{ liked: isLiked }" @click="toggleLike">
           <el-icon><Star /></el-icon>
           <span>点赞 {{ post.likeCount || 0 }}</span>
@@ -89,7 +97,22 @@
           加载更多评论...
         </div>
       </div>
-    </div>
+        <!-- Edit Post Dialog -->
+    <el-dialog v-model="showEditDialog" title="编辑帖子" width="600px" :close-on-click-modal="false">
+      <el-form :model="editForm" label-position="top">
+        <el-form-item label="标题" required>
+          <el-input v-model="editForm.title" maxlength="50" show-word-limit />
+        </el-form-item>
+        <el-form-item label="正文" required>
+          <el-input v-model="editForm.content" type="textarea" :rows="6" maxlength="10000" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" :loading="editLoading" @click="doUpdatePost" :disabled="!editForm.title.trim() || !editForm.content.trim()">保存</el-button>
+      </template>
+    </el-dialog>
+  </div>
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
@@ -108,13 +131,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { PostDetailApi } from '../../api/post'
+import { PostDetailApi, UpdatePostApi, DeletePostApi } from '../../api/post'
 import { commentCreateApi, commentPageApi, commentDeleteApi } from '../../api/comment'
 import { doLikeApi, undoLikeApi } from '../../api/like'
 import { useAuth } from '../../composables/useAuth'
-import { ArrowLeft, Star, ChatDotSquare, Close } from '@element-plus/icons-vue'
+import { ArrowLeft, Star, ChatDotSquare, Close, EditPen, Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '../../stores/auth'
 
 const route = useRoute()
@@ -126,6 +150,10 @@ const post = ref({})
 const loading = ref(true)
 const errorMsg = ref('')
 const isLiked = ref(false)
+const isOwner = ref(false)
+const showEditDialog = ref(false)
+const editForm = reactive({ title: '', content: '' })
+const editLoading = ref(false)
 const comments = ref([])
 const totalComments = ref(0)
 const commentText = ref('')
@@ -140,6 +168,7 @@ const loadPost = async () => {
   try {
     const res = await PostDetailApi(route.params.id)
     post.value = res.data || {}
+    isOwner.value = authStore.userInfo && authStore.userInfo.id === post.value.userId
     loadComments(true)
   } catch (e) {
     errorMsg.value = e.message || '帖子加载失败'
@@ -163,29 +192,39 @@ const loadComments = async (reset = false) => {
     if (reset) {
       comments.value = buildCommentTree(records)
     } else {
-      comments.value.push(...buildCommentTree(records, true))
+      buildCommentTree(records, true)
     }
     hasMoreComments.value = records.length >= commentPageSize
   } catch (e) {
-    // silently fail
+    console.error('Comment load failed:', e)
   }
 }
 
-const buildCommentTree = (records, skipParent = false) => {
-  if (skipParent) {
-    // For paginated load, just add flat
-    return records.filter(c => c.replyToCommentId !== null)
-  }
+const buildCommentTree = (records, append = false) => {
   const parents = records.filter(c => !c.replyToCommentId)
   parents.forEach(p => {
     p.replies = records.filter(c => c.replyToCommentId === p.id)
   })
+  if (append) {
+    // Merge with existing comments: add new parents, append replies to existing parents
+    parents.forEach(newP => {
+      const existing = comments.value.find(c => c.id === newP.id)
+      if (existing) {
+        if (newP.replies && newP.replies.length > 0) {
+          existing.replies = [...(existing.replies || []), ...newP.replies]
+        }
+      } else {
+        comments.value.push(newP)
+      }
+    })
+    return []
+  }
   return parents
 }
 
 const loadMoreComments = () => {
   commentPage.value++
-  loadComments()
+  loadComments(false)
 }
 
 const toggleLike = async () => {
@@ -200,7 +239,7 @@ const toggleLike = async () => {
       isLiked.value = true
       post.value.likeCount = (post.value.likeCount || 0) + 1
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) { ElMessage.warning(e.message || '操作失败') }
 }
 
 const submitComment = async () => {
@@ -218,7 +257,7 @@ const submitComment = async () => {
     replyTo.value = null
     loadComments(true)
   } catch (e) {
-    alert(e.message || '评论发送失败')
+    ElMessage.error(e.message || '评论发送失败')
   }
 }
 
@@ -230,7 +269,33 @@ const deleteComment = async (id) => {
   try {
     await commentDeleteApi(id)
     loadComments(true)
-  } catch (e) { /* ignore */ }
+  } catch (e) { ElMessage.error(e.message || '删除失败') }
+}
+
+const doDeletePost = async () => {
+  const confirmed = await ElMessageBox.confirm('确定要删除这篇帖子吗？', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }).catch(() => false)
+    if (!confirmed) return
+  try {
+    await DeletePostApi(post.value.id)
+    router.push('/post')
+  } catch (e) { ElMessage.error(e.message || '删除失败') }
+}
+
+const openEditDialog = () => {
+  editForm.title = post.value.title
+  editForm.content = post.value.content
+  showEditDialog.value = true
+}
+
+const doUpdatePost = async () => {
+  if (!editForm.title.trim() || !editForm.content.trim()) return
+  editLoading.value = true
+  try {
+    await UpdatePostApi(post.value.id, { title: editForm.title.trim(), content: editForm.content.trim() })
+    showEditDialog.value = false
+    loadPost()
+  } catch (e) { ElMessage.error(e.message || '更新失败') }
+  finally { editLoading.value = false }
 }
 
 const formatTime = (time) => {
@@ -251,6 +316,9 @@ watch(() => route.params.id, loadPost)
 </script>
 
 <style scoped>
+.edit-btn:hover { border-color: #409EFF; color: #409EFF; background: #ECF5FF; }
+.delete-btn:hover { border-color: #E74C3C; color: #E74C3C; background: #FEF0F0; }
+
 .detail-page {
   max-width: 720px;
   margin: 0 auto;

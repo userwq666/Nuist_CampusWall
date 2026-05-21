@@ -35,6 +35,7 @@ import { useAuthStore } from '../../stores/auth'
 import { useRouter } from 'vue-router'
 import { loginApi } from '../../api/account'
 import { User, Lock } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
@@ -51,7 +52,7 @@ const onLogin = async () => {
     if (userInfo?.role === 'ADMIN') router.push('/admin')
     else router.push('/post')
   } catch (e) {
-    alert(e.message || '登录失败')
+    ElMessage.error(e.message || '登录失败')
   } finally { loading.value = false }
 }
 </script>

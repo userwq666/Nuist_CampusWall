@@ -1,32 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../views/account/LoginView.vue'
-import RegisterView from '../views/account/RegisterView.vue'
-import PostListView from '../views/post/PostListView.vue'
-import PostDetailView from "../views/post/PostDetailView.vue";
-import AdminView from "../views/admin/AdminView.vue";
 import { useAuthStore } from '../stores/auth'
 
 
-/**
- * 路由规则配置数组
- * 每个路由对象包含：
- * - path: URL 路径
- * - component: 对应的 Vue 组件
- * - redirect: 重定向目标（可选）
- */
 const routes = [
-    // 默认重定向：访问根路径 '/' 时自动跳转到 '/post' 帖子页面
-    { path: '/', redirect: '/post',component: PostListView },
-    // 登录页面路由
-    { path: '/login', component: LoginView ,meta: { guestOnly: true }},
-    // 注册页面路由
-    { path: '/register', component: RegisterView ,meta: { guestOnly: true }},
-    // 帖子列表页面路由
-    { path: '/post', component: PostListView},
-    // 帖子详情页面路由
-    { path: '/post/:id', component: PostDetailView ,meta: { requiresAuth: true }},
-    // 管理页面路由
-    { path: '/admin', component: AdminView ,meta: { requiresAuth: true, requiresAdmin: true }}
+    { path: '/', redirect: '/post' },
+    { path: '/login', component: () => import('../views/account/LoginView.vue'), meta: { guestOnly: true } },
+    { path: '/register', component: () => import('../views/account/RegisterView.vue'), meta: { guestOnly: true } },
+    { path: '/post', component: () => import('../views/post/PostListView.vue') },
+    { path: '/post/:id', component: () => import('../views/post/PostDetailView.vue'), meta: { requiresAuth: true } },
+    { path: '/profile', component: () => import('../views/account/ProfileEditView.vue'), meta: { requiresAuth: true } },
+    { path: '/admin', component: () => import('../views/admin/AdminView.vue'), meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 /**

@@ -5,7 +5,7 @@
         <router-link to="/post" class="logo">校园墙</router-link>
       </div>
       <div class="navbar-center">
-        <el-input v-model="searchText" placeholder="搜索帖子..." :prefix-icon="Search" class="search-input" clearable />
+        <el-input v-model="searchText" placeholder="搜索帖子..." :prefix-icon="Search" class="search-input" clearable @keyup.enter="doSearch" @clear="doClearSearch" />
       </div>
       <div class="navbar-right">
         <template v-if="isLoggedIn">
@@ -17,6 +17,7 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item command="profile"><el-icon><User /></el-icon>个人资料</el-dropdown-item>
                 <el-dropdown-item command="myPosts"><el-icon><Document /></el-icon>我的帖子</el-dropdown-item>
                 <el-dropdown-item v-if="isAdmin" command="admin"><el-icon><Setting /></el-icon>管理后台</el-dropdown-item>
                 <el-dropdown-item divided command="logout"><el-icon><SwitchButton /></el-icon>退出登录</el-dropdown-item>
@@ -39,6 +40,7 @@
             <span>{{ currentUser?.nickname }}</span>
           </div>
           <router-link to="/post" class="mobile-menu-item" @click="showMobileMenu=false"><el-icon><HomeFilled /></el-icon>首页</router-link>
+          <router-link to="/profile" class="mobile-menu-item" @click="showMobileMenu=false"><el-icon><User /></el-icon>个人资料</router-link>
           <router-link to="/post?tab=my" class="mobile-menu-item" @click="showMobileMenu=false"><el-icon><Document /></el-icon>我的帖子</router-link>
           <router-link v-if="isAdmin" to="/admin" class="mobile-menu-item" @click="showMobileMenu=false"><el-icon><Setting /></el-icon>管理后台</router-link>
           <div class="mobile-menu-item" @click="handleLogout"><el-icon><SwitchButton /></el-icon>退出登录</div>
@@ -54,19 +56,32 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import { Search, ArrowDown, Document, Setting, SwitchButton, Menu, HomeFilled } from '@element-plus/icons-vue'
+import { Search, ArrowDown, Document, Setting, SwitchButton, Menu, HomeFilled, User } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 const { isLoggedIn, currentUser, isAdmin, logout } = useAuth()
 const searchText = ref('')
 const showMobileMenu = ref(false)
 
 function handleCommand(command) {
   if (command === 'logout') handleLogout()
+  else if (command === 'profile') router.push('/profile')
   else if (command === 'admin') router.push('/admin')
   else if (command === 'myPosts') router.push('/post?tab=my')
+}
+function doSearch() {
+  const q = searchText.value.trim()
+  if (q) {
+    router.push({ path: '/post', query: { search: q } })
+  }
+}
+function doClearSearch() {
+  if (route.path === '/post') {
+    router.push({ path: '/post' })
+  }
 }
 function handleLogout() { showMobileMenu.value = false; logout() }
 </script>

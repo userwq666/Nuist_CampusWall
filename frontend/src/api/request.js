@@ -3,7 +3,7 @@ import axios from 'axios'
 // 统一请求实例
 const request = axios.create({
   baseURL: '/api',
-  timeout: 10000
+  timeout: 5000
 })
 
 // 请求拦截：自动携带 token
@@ -52,13 +52,18 @@ request.interceptors.response.use(
       if (status === 422) msg = serverMsg || '参数错误'
       if (status === 500) msg = serverMsg || '服务器异常'
 
-      // 方便页面层按业务码做精细判断
       const e = new Error(msg)
       e.status = status
       e.code = serverCode
       return Promise.reject(e)
     }
 
+    // 网络错误（后端未启动/DNS/超时等）
+    if (error.code === 'ECONNREFUSED') {
+      msg = '后端服务未启动，请先启动后端'
+    } else if (error.code === 'ECONNABORTED') {
+      msg = '请求超时，请检查网络与后端状态'
+    }
     return Promise.reject(new Error(msg))
   }
 )
