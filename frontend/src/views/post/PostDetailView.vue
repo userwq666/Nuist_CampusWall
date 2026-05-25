@@ -47,37 +47,41 @@
         </div>
       </div>
 
-      <!-- Comment Input -->
-      <div class="comment-input-area">
-        <el-input
-          v-model="commentText"
-          :placeholder="replyTo ? '回复 @' + replyTo.username : '说点什么...'"
-          type="textarea"
-          :rows="2"
-          class="comment-input"
-        />
-        <div class="comment-input-area-upload">
+            <!-- Comment Bottom Bar (fixed) -->
+      <div class="comment-bottom-bar">
+        <div class="comment-bar-inner">
           <el-upload
             :before-upload="handleCommentBeforeUpload"
             :auto-upload="false"
             :limit="1"
             accept=".jpg,.jpeg,.png,.gif,.webp"
-            list-type="picture-card"
+            :show-file-list="false"
             v-model:file-list="commentFileList"
+            class="comment-upload-btn"
           >
-            <el-icon><Plus /></el-icon>
+            <el-button circle size="small" type="default">
+              <el-icon><Plus /></el-icon>
+            </el-button>
           </el-upload>
+          <el-input
+            v-model="commentText"
+            :placeholder="replyTo ? '回复 @' + replyTo.username : '说点什么...'"
+            class="comment-input"
+          />
+          <el-button type="primary" circle size="small" @click="submitComment" :disabled="!commentText.trim()">
+            <el-icon><Promotion /></el-icon>
+          </el-button>
         </div>
-        <div class="comment-input-actions">
-          <span v-if="replyTo" class="reply-hint">
-            回复 @{{ replyTo.username }}
-            <el-icon @click="cancelReply"><Close /></el-icon>
-          </span>
-          <el-button type="primary" size="small" @click="submitComment" :disabled="!commentText.trim()">发送</el-button>
+        <div v-if="commentFileList.length > 0" class="comment-bar-file-hint">
+          <el-tag size="small" closable @close="commentFileList = []">图片已选</el-tag>
+        </div>
+        <div v-if="replyTo" class="comment-bar-reply">
+          回复 @{{ replyTo.username }}
+          <el-icon @click="cancelReply"><Close /></el-icon>
         </div>
       </div>
 
-      <!-- Comments -->
+<!-- Comments -->
       <div class="comments-section">
         <h3 class="comments-title">评论 ({{ totalComments }})</h3>
         <div v-if="comments.length === 0" class="no-comments">暂无评论，来说点什么吧</div>
@@ -150,7 +154,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, EditPen, Delete, Star, ChatDotSquare, Close, Plus } from '@element-plus/icons-vue'
+import { ArrowLeft, EditPen, Delete, Star, ChatDotSquare, Close, Plus, Promotion } from '@element-plus/icons-vue'
 import { PostDetailApi, UpdatePostApi, DeletePostApi } from '@/api/post'
 import { commentPageApi, commentCreateApi, commentDeleteApi } from '@/api/comment'
 import { uploadFileApi } from '@/api/file'
@@ -173,6 +177,7 @@ const showEditDialog = ref(false)
 const editLoading = ref(false)
 const editForm = ref({ title: '', content: '' })
 const isLiked = ref(false)
+const editFileList = ref([])
 
 const isOwner = computed(() => {
   const uid = localStorage.getItem('userId')
@@ -453,16 +458,35 @@ watch(() => route.params.id, loadPost)
   color: var(--text-secondary);
 }
 
-/* Comment Input */
-.comment-input-area { margin-bottom: 24px; }
-.comment-input { --el-input-border-radius: 12px; }
-.comment-input-area-upload { margin-bottom: 8px; }
-.comment-input-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
+/* Comment Bottom Bar */
+.comment-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  padding: 8px 16px;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
 }
+.comment-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.comment-upload-btn { flex-shrink: 0; }
+.comment-input { flex: 1; --el-input-border-radius: 20px; }
+.comment-bar-file-hint { margin-top: 4px; }
+.comment-bar-reply {
+  font-size: 12px;
+  color: var(--primary);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.comment-bar-reply .el-icon { cursor: pointer; }
 .reply-hint {
   font-size: 13px;
   color: var(--primary);
@@ -532,4 +556,6 @@ watch(() => route.params.id, loadPost)
   .detail-container { padding: 20px; }
   .detail-title { font-size: 20px; }
 }
+.detail-page { padding-bottom: 80px; }
+.detail-page { padding-bottom: 80px; }
 </style>
