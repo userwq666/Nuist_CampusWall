@@ -150,6 +150,18 @@
             <el-icon><Plus /></el-icon>
           </el-upload>
         </el-form-item>
+        <el-form-item label="图片">
+          <el-upload
+            :before-upload="handleEditBeforeUpload"
+            :auto-upload="false"
+            :limit="9"
+            accept=".jpg,.jpeg,.png,.gif,.webp"
+            list-type="picture-card"
+            v-model:file-list="editFileList"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showEditDialog = false">取消</el-button>
@@ -189,6 +201,8 @@ const route = useRoute()
 const router = useRouter()
 
 const post = ref({})
+const currentImageIndex = ref(0)
+const images = computed(() => (post.value.imageUrl || '').split(',').filter(Boolean))
 const comments = ref([])
 const totalComments = ref(0)
 const loading = ref(false)
@@ -365,6 +379,7 @@ const doDeletePost = async () => {
 
 const openEditDialog = () => {
   editForm.value = { title: post.value.title || '', content: post.value.content || '' }
+  editFileList.value = []
   showEditDialog.value = true
 }
 
@@ -402,6 +417,15 @@ const formatTime = (time) => {
 
 const goBack = () => router.push('/post')
 
+const prevImage = () => {
+  if (images.value.length === 0) return
+  currentImageIndex.value = (currentImageIndex.value - 1 + images.value.length) % images.value.length
+}
+const nextImage = () => {
+  if (images.value.length === 0) return
+  currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
+}
+
 onMounted(loadPost)
 watch(() => route.params.id, loadPost)
 </script>
@@ -434,13 +458,14 @@ watch(() => route.params.id, loadPost)
 }
 .detail-back:hover { color: var(--primary); }
 
-.detail-header { margin-bottom: 20px; }
+.detail-header { margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
 .detail-title {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
+  max-width: 900px;
 }
 .detail-author {
   display: flex;
@@ -456,16 +481,67 @@ watch(() => route.params.id, loadPost)
 .post-time { font-size: 12px; color: var(--text-tertiary); }
 
 .detail-image {
-  margin-bottom: 20px;
+  margin: 0 auto 20px;
+  max-width: 900px;
+}
+.img-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: #f8f9fa;
   border-radius: var(--radius-md);
-  overflow: hidden;
-  max-width: 600px;
 }
 .detail-image .detail-el-image {
-  width: 100%;
-  max-height: 500px;
-  display: block;
+  max-width: 100%;
+  max-height: 600px;
+  border-radius: var(--radius-md);
   cursor: zoom-in;
+}
+.img-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #333;
+  z-index: 10;
+  transition: all 0.2s;
+}
+.img-nav-btn:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.img-nav-left { left: -20px; }
+.img-nav-right { right: -20px; }
+.img-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ddd;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dot.active {
+  background: var(--primary);
+  width: 20px;
+  border-radius: 4px;
 }
 
 .detail-content {
@@ -473,7 +549,8 @@ watch(() => route.params.id, loadPost)
   line-height: 1.8;
   color: var(--text-primary);
   white-space: pre-wrap;
-  margin-bottom: 24px;
+  margin: 0 auto 24px;
+  max-width: 900px;
 }
 
 .detail-actions {
@@ -512,20 +589,21 @@ watch(() => route.params.id, loadPost)
 .comment-bottom-bar {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 1160px;
   background: white;
   border-top: 1px solid var(--border);
-  padding: 8px 16px;
-  z-index: 100;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  padding: 12px 32px;
+  z-index: 100;
 }
 .comment-bar-inner {
   display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 .comment-upload-btn { flex-shrink: 0; }
 .comment-input { flex: 1; --el-input-border-radius: 20px; }
@@ -539,14 +617,6 @@ watch(() => route.params.id, loadPost)
   gap: 4px;
 }
 .comment-bar-reply .el-icon { cursor: pointer; }
-.reply-hint {
-  font-size: 13px;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.reply-hint .el-icon { cursor: pointer; }
 
 /* Comments */
 .comments-section { }
@@ -608,6 +678,5 @@ watch(() => route.params.id, loadPost)
   .detail-container { padding: 20px; }
   .detail-title { font-size: 20px; }
 }
-.detail-page { padding-bottom: 80px; }
 .detail-page { padding-bottom: 80px; }
 </style>
