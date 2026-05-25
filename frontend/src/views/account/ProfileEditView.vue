@@ -173,7 +173,7 @@ onMounted(loadProfile)
 
 .profile-card {
   width: 100%;
-  max-width: 540px;
+  max-width: 1200px;
   background: white;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);

@@ -55,7 +55,7 @@
       <div v-else class="waterfall">
         <div v-for="post in filteredPosts" :key="post.id" class="post-card" @click="goDetail(post.id)">
           <div class="card-image">
-            <img v-if="post.imageUrl && !failedImages.has(post.id)" :src="post.imageUrl" :alt="post.title" @error="onImageError(post.id)" />
+            <img v-if="post.imageUrl && !failedImages.has(post.id)" :src="post.imageUrl.split(',')[0]" :alt="post.title" @error="onImageError(post.id)" />
             <div v-else class="card-image-placeholder">
               <el-icon :size="32" color="#CCC"><Picture /></el-icon>
             </div>
@@ -99,7 +99,7 @@
           <el-upload
             :before-upload="handleBeforeUpload"
             :auto-upload="false"
-            :limit="1"
+            :limit="9"
             accept=".jpg,.jpeg,.png,.gif,.webp"
             list-type="picture-card"
             v-model:file-list="createForm.fileList"
@@ -224,16 +224,18 @@ const doCreatePost = async () => {
   if (!isLoggedIn.value) { router.push('/login'); return }
   createLoading.value = true
   try {
-    // 从 el-upload 的 fileList 中获取 raw File（Element Plus 标准做法）
-    const uploadFile = createForm.fileList[0]?.raw
-    let fileId = null
-    if (uploadFile) {
-      const res = await uploadFileApi(uploadFile, 'POST')
-      fileId = res.data
-      if (!fileId) { ElMessage.warning('上传成功但未获取到文件 ID'); return }
+    // 上传多张图片
+    const fileIds = []
+    for (const f of createForm.fileList) {
+      if (f.raw) {
+        const res = await uploadFileApi(f.raw, 'POST')
+        const fid = res.data
+        if (fid) fileIds.push(fid)
+        else { ElMessage.warning('上传成功但未获取到文件 ID'); return }
+      }
     }
     const payload = { title: createForm.title.trim(), content: createForm.content.trim() }
-    if (fileId) payload.fileID = fileId
+    if (fileIds.length > 0) { payload.fileIds = fileIds; payload.fileID = fileIds[0] }
     await CreatePostApi(payload)
     showCreateDialog.value = false
     loadPosts(true)
@@ -296,7 +298,7 @@ onUnmounted(() => {
 .tabs-bar .el-tabs { flex: 1; }
 .create-btn { height: 36px; border-radius: 20px; font-size: 14px; }
 .tabs-bar :deep(.el-tabs__header) { margin: 0; }
-.tabs-bar :deep(.el-tabs__item) { font-size: 15px; height: 48px; font-weight: 500; }
+.tabs-bar :deep(.el-tabs__item) { font-size: 15px; height: 48px; font-weight: 500; padding: 0 40px; }
 .tabs-bar :deep(.el-tabs__item.is-active) { color: var(--primary); }
 .tabs-bar :deep(.el-tabs__active-bar) { background: var(--primary); }
 

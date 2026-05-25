@@ -64,17 +64,21 @@ public class PostServiceImpl implements PostService {
         //3.保存帖子
         postMapper.insert(post);
 
-        //4.文件绑定
-        if(dto.getFileID()!=null){
-            //4.绑定文件到帖子
-            fileService.bindFileToBiz(dto.getFileID(), FileType.POST,post.getId());
-
-            //4.2读取url并填回
-            FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileID());
-            if(fileAsset!=null){
-                Post updataPost =new Post();
+        //4.文件绑定（支持多图）
+        if(dto.getFileIds()!=null && !dto.getFileIds().isEmpty()){
+            StringBuilder urls = new StringBuilder();
+            for (Long fid : dto.getFileIds()) {
+                fileService.bindFileToBiz(fid, FileType.POST, post.getId());
+                FileAsset fileAsset = fileAssetMapper.selectById(fid);
+                if(fileAsset!=null){
+                    if (urls.length() > 0) urls.append(",");
+                    urls.append(fileAsset.getUrl());
+                }
+            }
+            if (urls.length() > 0) {
+                Post updataPost = new Post();
                 updataPost.setId(post.getId());
-                updataPost.setImageUrl(fileAsset.getUrl());
+                updataPost.setImageUrl(urls.toString());
                 updataPost.setUpdateTime(LocalDateTime.now());
                 postMapper.updateById(updataPost);
             }
@@ -183,13 +187,20 @@ public class PostServiceImpl implements PostService {
         updatePost.setImageUrl(dto.getImageUrl());
         updatePost.setUpdateTime(LocalDateTime.now());
 
-        //图片处理
-        if(dto.getFileId()!=null){
+        //图片处理（支持多图）
+        if(dto.getFileIds()!=null && !dto.getFileIds().isEmpty()){
             fileService.markTempByBiz(FileType.POST, updatePost.getId());
-            fileService.bindFileToBiz(dto.getFileId(), FileType.POST, updatePost.getId());
-            FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileId());
-            if(fileAsset!=null){
-                updatePost.setImageUrl(fileAsset.getUrl());
+            StringBuilder urls = new StringBuilder();
+            for (Long fid : dto.getFileIds()) {
+                fileService.bindFileToBiz(fid, FileType.POST, updatePost.getId());
+                FileAsset fileAsset = fileAssetMapper.selectById(fid);
+                if(fileAsset!=null){
+                    if (urls.length() > 0) urls.append(",");
+                    urls.append(fileAsset.getUrl());
+                }
+            }
+            if (urls.length() > 0) {
+                updatePost.setImageUrl(urls.toString());
             }
         }
 

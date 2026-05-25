@@ -21,7 +21,14 @@
 
       <!-- Post Image -->
       <div v-if="post.imageUrl" class="detail-image">
-        <img :src="post.imageUrl" :alt="post.title" @error="onImageError" />
+        <el-image
+          :src="(post.imageUrl||'').split(',')[0]"
+          :alt="post.title"
+          :preview-src-list="(post.imageUrl||'').split(',')"
+          fit="contain"
+          :preview-teleported="true"
+          class="detail-el-image"
+        />
       </div>
 
       <!-- Post Content -->
@@ -68,7 +75,7 @@
             :placeholder="replyTo ? '回复 @' + replyTo.username : '说点什么...'"
             class="comment-input"
           />
-          <el-button type="primary" circle size="small" @click="submitComment" :disabled="!commentText.trim()">
+          <el-button type="primary" circle size="small" @click="submitComment">
             <el-icon><Promotion /></el-icon>
           </el-button>
         </div>
@@ -102,7 +109,13 @@
             </div>
             <div class="comment-content">{{ comment.content }}</div>
             <div v-if="comment.imageUrl" class="comment-image">
-              <img :src="comment.imageUrl" @error="onImageError" />
+              <el-image
+                :src="comment.imageUrl"
+                :preview-src-list="[comment.imageUrl]"
+                fit="contain"
+                :preview-teleported="true"
+                class="comment-el-image"
+              />
             </div>
             <div class="comment-actions">
               <span class="comment-action" @click="startReply(comment)">回复</span>
@@ -124,6 +137,18 @@
         </el-form-item>
         <el-form-item label="正文" required>
           <el-input v-model="editForm.content" type="textarea" :rows="6" maxlength="10000" show-word-limit />
+        </el-form-item>
+        <el-form-item label="图片">
+          <el-upload
+            :before-upload="handleEditBeforeUpload"
+            :auto-upload="false"
+            :limit="9"
+            accept=".jpg,.jpeg,.png,.gif,.webp"
+            list-type="picture-card"
+            v-model:file-list="editFileList"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -273,6 +298,14 @@ const handleCommentBeforeUpload = (file) => {
   return true
 }
 
+const handleEditBeforeUpload = (file) => {
+  const isImage = file.type && file.type.startsWith('image/')
+  const isLt5M = file.size / 1024 / 1024 < 5
+  if (!isImage) { ElMessage.error('只能上传图片文件'); return false }
+  if (!isLt5M) { ElMessage.error('图片大小不能超过 5MB'); return false }
+  return true
+}
+
 const startReply = (comment) => {
   replyTo.value = { id: comment.id, userId: comment.userId, username: comment.username }
   commentText.value = ''
@@ -338,8 +371,19 @@ const openEditDialog = () => {
 const doUpdatePost = async () => {
   editLoading.value = true
   try {
-    await UpdatePostApi(post.value.id, { title: editForm.title.trim(), content: editForm.content.trim() })
+    const fileIds = []
+    for (const f of editFileList.value) {
+      if (f.raw) {
+        const res = await uploadFileApi(f.raw, 'POST')
+        const fid = res.data
+        if (fid) fileIds.push(fid)
+      }
+    }
+    const data = { title: editForm.title.trim(), content: editForm.content.trim() }
+    if (fileIds.length > 0) data.fileIds = fileIds
+    await UpdatePostApi(post.value.id, data)
     showEditDialog.value = false
+    editFileList.value = []
     loadPost()
   } catch (e) { ElMessage.error(e.message || '更新失败') }
   finally { editLoading.value = false }
@@ -367,7 +411,7 @@ watch(() => route.params.id, loadPost)
 .delete-btn:hover { border-color: #E74C3C; color: #E74C3C; background: #FEF0F0; }
 
 .detail-page {
-  max-width: 720px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -415,8 +459,14 @@ watch(() => route.params.id, loadPost)
   margin-bottom: 20px;
   border-radius: var(--radius-md);
   overflow: hidden;
+  max-width: 600px;
 }
-.detail-image img { width: 100%; display: block; }
+.detail-image .detail-el-image {
+  width: 100%;
+  max-height: 500px;
+  display: block;
+  cursor: zoom-in;
+}
 
 .detail-content {
   font-size: 16px;
@@ -474,6 +524,8 @@ watch(() => route.params.id, loadPost)
   display: flex;
   align-items: center;
   gap: 8px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 .comment-upload-btn { flex-shrink: 0; }
 .comment-input { flex: 1; --el-input-border-radius: 20px; }
@@ -528,7 +580,7 @@ watch(() => route.params.id, loadPost)
 .comment-time { font-size: 11px; color: var(--text-tertiary); }
 .comment-content { font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
 .comment-image { margin-bottom: 6px; border-radius: 8px; overflow: hidden; max-width: 240px; }
-.comment-image img { width: 100%; display: block; }
+.comment-image .comment-el-image { width: 100%; display: block; cursor: zoom-in; }
 .reply-tag { font-size: 12px; color: var(--text-tertiary); }
 .comment-header .reply-author { font-size: 12px; font-weight: 500; color: var(--primary); }
 .comment-actions { display: flex; gap: 12px; }
