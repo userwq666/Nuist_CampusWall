@@ -64,7 +64,7 @@
           <div class="card-body">
             <h3 class="card-title">{{ post.title }}</h3>
             <div class="card-meta">
-              <span class="card-author">@{{ post.userId }}</span>
+              <span class="card-author">@{{ post.username }}</span>
               <span class="card-likes">
                 <el-icon :size="14"><Goods /></el-icon>
                 {{ post.likeCount || 0 }}

@@ -11,9 +11,9 @@
       <div class="detail-header">
         <h1 class="detail-title">{{ post.title }}</h1>
         <div class="detail-author">
-          <el-avatar :size="36">{{ post.userId }}</el-avatar>
+          <el-avatar :size="36">{{ post.username?.charAt(0) }}</el-avatar>
           <div class="author-info">
-            <span class="author-name">@{{ post.userId }}</span>
+            <span class="author-name">@{{ post.username }}</span>
             <span class="post-time">{{ formatTime(post.createTime) }}</span>
           </div>
         </div>
@@ -51,14 +51,26 @@
       <div class="comment-input-area">
         <el-input
           v-model="commentText"
-          :placeholder="replyTo ? '回复 @' + replyTo.userId : '说点什么...'"
+          :placeholder="replyTo ? '回复 @' + replyTo.username : '说点什么...'"
           type="textarea"
           :rows="2"
           class="comment-input"
         />
+        <div class="comment-input-area-upload">
+          <el-upload
+            :before-upload="handleCommentBeforeUpload"
+            :auto-upload="false"
+            :limit="1"
+            accept=".jpg,.jpeg,.png,.gif,.webp"
+            list-type="picture-card"
+            v-model:file-list="commentFileList"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </div>
         <div class="comment-input-actions">
           <span v-if="replyTo" class="reply-hint">
-            回复 @{{ replyTo.userId }}
+            回复 @{{ replyTo.username }}
             <el-icon @click="cancelReply"><Close /></el-icon>
           </span>
           <el-button type="primary" size="small" @click="submitComment" :disabled="!commentText.trim()">发送</el-button>
@@ -70,20 +82,23 @@
         <h3 class="comments-title">评论 ({{ totalComments }})</h3>
         <div v-if="comments.length === 0" class="no-comments">暂无评论，来说点什么吧</div>
         <div v-for="(comment, idx) in comments" :key="comment.id" class="comment-item">
-          <el-avatar :size="32">{{ comment.userId }}</el-avatar>
+          <el-avatar :size="32">{{ comment.username?.charAt(0) }}</el-avatar>
           <div class="comment-body">
             <div class="comment-header">
-              <span class="comment-author">@{{ comment.userId }}</span>
-              <span class="comment-floor">#{{ idx + 1 }}</span>
-              <span class="comment-time">{{ formatTime(comment.createTime) }}</span>
-            </div>
-            <div class="comment-content">
+              <span class="comment-author">{{ comment.username }}</span>
               <template v-if="comment.replyToUserId">
                 <span class="reply-tag">回复</span>
-                <span class="reply-author">@{{ comment.replyToUserId }}</span>
-                ：{{ comment.content }}
+                <span class="reply-author">@{{ comment.replyToUsername }}(#{{ comment.replyToFloor }})</span>
               </template>
-              <template v-else>{{ comment.content }}</template>
+              <template v-else>
+                <span class="reply-author">@{{ comment.postAuthorUsername }}</span>
+              </template>
+              <span class="comment-time">{{ formatTime(comment.createTime) }}</span>
+              <span class="comment-floor">#{{ idx + 1 }}:</span>
+            </div>
+            <div class="comment-content">{{ comment.content }}</div>
+            <div v-if="comment.imageUrl" class="comment-image">
+              <img :src="comment.imageUrl" @error="onImageError" />
             </div>
             <div class="comment-actions">
               <span class="comment-action" @click="startReply(comment)">回复</span>
@@ -112,18 +127,19 @@
         <el-button type="primary" :loading="editLoading" @click="doUpdatePost" :disabled="!editForm.title.trim() || !editForm.content.trim()">保存</el-button>
       </template>
     </el-dialog>
-  </div>
+
+    </div>
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
-      <el-skeleton :rows="5" animated />
+      <el-skeleton :rows="8" animated />
     </div>
 
     <!-- Error -->
     <div v-if="errorMsg" class="error-state">
       <el-result icon="error" :title="errorMsg">
         <template #extra>
-          <el-button type="primary" @click="goBack">返回列表</el-button>
+          <el-button type="primary" @click="loadPost">重试</el-button>
         </template>
       </el-result>
     </div>
@@ -131,45 +147,59 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { PostDetailApi, UpdatePostApi, DeletePostApi } from '../../api/post'
-import { commentCreateApi, commentPageApi, commentDeleteApi } from '../../api/comment'
-import { doLikeApi, undoLikeApi } from '../../api/like'
-import { useAuth } from '../../composables/useAuth'
-import { ArrowLeft, Star, ChatDotSquare, Close, EditPen, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useAuthStore } from '../../stores/auth'
+import { ArrowLeft, EditPen, Delete, Star, ChatDotSquare, Close, Plus } from '@element-plus/icons-vue'
+import { PostDetailApi, UpdatePostApi, DeletePostApi } from '@/api/post'
+import { commentPageApi, commentCreateApi, commentDeleteApi } from '@/api/comment'
+import { uploadFileApi } from '@/api/file'
+import { likePostApi, unlikePostApi, checkLikeApi } from '@/api/like'
 
 const route = useRoute()
 const router = useRouter()
-const { isLoggedIn, currentUser } = useAuth()
-const authStore = useAuthStore()
 
 const post = ref({})
-const loading = ref(true)
-const errorMsg = ref('')
-const isLiked = ref(false)
-const isOwner = ref(false)
-const showEditDialog = ref(false)
-const editForm = reactive({ title: '', content: '' })
-const editLoading = ref(false)
 const comments = ref([])
 const totalComments = ref(0)
+const loading = ref(false)
+const errorMsg = ref('')
 const commentText = ref('')
+const commentFileToUpload = ref(null)
+const commentFileList = ref([])
 const replyTo = ref(null)
-const commentPage = ref(1)
-const hasMoreComments = ref(true)
-const commentPageSize = 5
+const hasMoreComments = ref(false)
+const commentPageNum = ref(1)
+const showEditDialog = ref(false)
+const editLoading = ref(false)
+const editForm = ref({ title: '', content: '' })
+const isLiked = ref(false)
+
+const isOwner = computed(() => {
+  const uid = localStorage.getItem('userId')
+  const postUserId = post.value.userId ? String(post.value.userId) : ''
+  return uid && uid === postUserId
+})
+
+const isMyComment = (comment) => {
+  const uid = localStorage.getItem('userId')
+  const commentUserId = comment.userId ? String(comment.userId) : ''
+  return uid && uid === commentUserId
+}
 
 const loadPost = async () => {
+  const id = route.params.id
+  if (!id) return
   loading.value = true
   errorMsg.value = ''
   try {
-    const res = await PostDetailApi(route.params.id)
+    const res = await PostDetailApi(id)
     post.value = res.data || {}
-    isOwner.value = authStore.userInfo && authStore.userInfo.id === post.value.userId
-    loadComments(true)
+    await loadComments(true)
+    try {
+      const likeRes = await checkLikeApi({ targetType: 1, targetId: Number(id) })
+      isLiked.value = likeRes.data || false
+    } catch (e) { /* ignore */ }
   } catch (e) {
     errorMsg.value = e.message || '帖子加载失败'
   } finally {
@@ -177,97 +207,132 @@ const loadPost = async () => {
   }
 }
 
-const loadComments = async (reset = false) => {
+const loadComments = async (reset = true) => {
   if (reset) {
-    commentPage.value = 1
+    commentPageNum.value = 1
     comments.value = []
-    hasMoreComments.value = true
   }
   try {
-    const res = await commentPageApi({ postId: route.params.id, pageNum: commentPage.value, pageSize: commentPageSize })
-    const data = res.data || {}
-    totalComments.value = data.total || 0
-    const records = data.records || []
-    if (reset) {
-      comments.value = records
-    } else {
-      comments.value.push(...records)
+    const res = await commentPageApi({
+      postId: post.value.id,
+      pageNum: commentPageNum.value,
+      pageSize: 10
+    })
+    const page = res.data
+    if (page && page.records) {
+      comments.value = reset ? page.records : [...comments.value, ...page.records]
+      totalComments.value = page.total || 0
+      hasMoreComments.value = page.records.length >= 10
     }
-    hasMoreComments.value = records.length >= commentPageSize
-  } catch (e) {
-    console.error('Comment load failed:', e)
-  }
+  } catch (e) { /* ignore */ }
 }
 
 const loadMoreComments = () => {
-  commentPage.value++
+  commentPageNum.value++
   loadComments(false)
 }
 
-const onImageError = (e) => { e.target.style.display = 'none' }
-
-const toggleLike = async () => {
-  if (!isLoggedIn.value) { router.push('/login'); return }
-  try {
-    if (isLiked.value) {
-      await undoLikeApi({ targetId: post.value.id, targetType: 'POST' })
-      isLiked.value = false
-      post.value.likeCount = Math.max(0, (post.value.likeCount || 1) - 1)
-    } else {
-      await doLikeApi({ targetId: post.value.id, targetType: 'POST' })
-      isLiked.value = true
-      post.value.likeCount = (post.value.likeCount || 0) + 1
-    }
-  } catch (e) { ElMessage.warning(e.message || '操作失败') }
-}
-
 const submitComment = async () => {
-  if (!isLoggedIn.value) { router.push('/login'); return }
-  const text = commentText.value.trim()
-  if (!text) return
+  if (!commentText.value.trim()) return
   try {
-    const payload = { postId: Number(route.params.id), content: text }
-    if (replyTo.value) {
-      payload.replyToCommentId = replyTo.value.id
-      payload.replyToUserId = replyTo.value.userId
+    let fileId = null
+    if (commentFileToUpload.value) {
+      const res = await uploadFileApi(commentFileToUpload.value, 'COMMENT')
+      fileId = res.data
+      if (!fileId) { ElMessage.warning('上传成功但未获取到文件 ID'); return }
     }
-    await commentCreateApi(payload)
+    const dto = {
+      postId: post.value.id,
+      content: commentText.value.trim(),
+    }
+    if (fileId) dto.fileId = fileId
+    if (replyTo.value) {
+      dto.replyToCommentId = replyTo.value.id
+      dto.replyToUserId = Number(replyTo.value.userId)
+    }
+    await commentCreateApi(dto)
     commentText.value = ''
+    commentFileList.value = []
+    commentFileToUpload.value = null
     replyTo.value = null
     loadComments(true)
   } catch (e) {
-    ElMessage.error(e.message || '评论发送失败')
+    ElMessage.error(e.message || '评论失败')
   }
 }
 
-const startReply = (comment) => { replyTo.value = comment }
-const cancelReply = () => { replyTo.value = null }
-const isMyComment = (comment) => authStore.userInfo?.id === comment.userId
+const handleCommentBeforeUpload = (file) => {
+  const isImage = file.type.startsWith('image/')
+  const isLt5M = file.size / 1024 / 1024 < 5
+  if (!isImage) { ElMessage.error('只能上传图片文件'); return false }
+  if (!isLt5M) { ElMessage.error('图片大小不能超过 5MB'); return false }
+  commentFileToUpload.value = file
+  return false
+}
+
+const startReply = (comment) => {
+  replyTo.value = { id: comment.id, userId: comment.userId, username: comment.username }
+  commentText.value = ''
+}
+
+const cancelReply = () => {
+  replyTo.value = null
+}
 
 const deleteComment = async (id) => {
   try {
+    await ElMessageBox.confirm('确定删除这条评论吗？', '提示', { type: 'warning' })
     await commentDeleteApi(id)
+    ElMessage.success('删除成功')
     loadComments(true)
-  } catch (e) { ElMessage.error(e.message || '删除失败') }
+  } catch (e) {
+    if (e !== 'cancel' && e !== 'close') {
+      ElMessage.error(e.message || '删除失败')
+    }
+  }
+}
+
+const toggleLike = async () => {
+  try {
+    if (isLiked.value) {
+      await unlikePostApi({ targetType: 1, targetId: post.value.id })
+      isLiked.value = false
+      post.value.likeCount = Math.max(0, (post.value.likeCount || 1) - 1)
+      ElMessage.success('已取消点赞')
+    } else {
+      await likePostApi({ targetType: 1, targetId: post.value.id })
+      isLiked.value = true
+      post.value.likeCount = (post.value.likeCount || 0) + 1
+      ElMessage.success('点赞成功')
+    }
+  } catch (e) {
+    ElMessage.error(e.message || '操作失败')
+  }
+}
+
+const onImageError = () => {
+  // 图片加载失败静默处理
 }
 
 const doDeletePost = async () => {
-  const confirmed = await ElMessageBox.confirm('确定要删除这篇帖子吗？', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }).catch(() => false)
-    if (!confirmed) return
   try {
+    await ElMessageBox.confirm('确定删除这篇帖子吗？删除后不可恢复。', '提示', { type: 'warning' })
     await DeletePostApi(post.value.id)
+    ElMessage.success('删除成功')
     router.push('/post')
-  } catch (e) { ElMessage.error(e.message || '删除失败') }
+  } catch (e) {
+    if (e !== 'cancel' && e !== 'close') {
+      ElMessage.error(e.message || '删除失败')
+    }
+  }
 }
 
 const openEditDialog = () => {
-  editForm.title = post.value.title
-  editForm.content = post.value.content
+  editForm.value = { title: post.value.title || '', content: post.value.content || '' }
   showEditDialog.value = true
 }
 
 const doUpdatePost = async () => {
-  if (!editForm.title.trim() || !editForm.content.trim()) return
   editLoading.value = true
   try {
     await UpdatePostApi(post.value.id, { title: editForm.title.trim(), content: editForm.content.trim() })
@@ -393,6 +458,7 @@ watch(() => route.params.id, loadPost)
 /* Comment Input */
 .comment-input-area { margin-bottom: 24px; }
 .comment-input { --el-input-border-radius: 12px; }
+.comment-input-area-upload { margin-bottom: 8px; }
 .comment-input-actions {
   display: flex;
   justify-content: space-between;
@@ -431,15 +497,18 @@ watch(() => route.params.id, loadPost)
 .comment-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 .comment-author { font-size: 13px; font-weight: 500; color: var(--text-primary); }
 .comment-floor { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
 .comment-time { font-size: 11px; color: var(--text-tertiary); }
 .comment-content { font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
-.reply-tag { font-size: 12px; color: var(--text-tertiary); margin-right: 2px; }
-.comment-content .reply-author { font-weight: 500; color: var(--primary); }
+.comment-image { margin-bottom: 6px; border-radius: 8px; overflow: hidden; max-width: 240px; }
+.comment-image img { width: 100%; display: block; }
+.reply-tag { font-size: 12px; color: var(--text-tertiary); }
+.comment-header .reply-author { font-size: 12px; font-weight: 500; color: var(--primary); }
 .comment-actions { display: flex; gap: 12px; }
 .comment-action {
   font-size: 12px;

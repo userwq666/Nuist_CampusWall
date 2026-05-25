@@ -8,6 +8,7 @@ import com.nuist_campuswall.domain.enums.FileType;
 import com.nuist_campuswall.domain.enums.PostStatus;
 import com.nuist_campuswall.domain.file.FileAsset;
 import com.nuist_campuswall.domain.post.Post;
+import com.nuist_campuswall.domain.user.User;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.dto.post.CreatePostDTO;
 import com.nuist_campuswall.dto.post.PagePostDTO;
@@ -15,6 +16,7 @@ import com.nuist_campuswall.dto.post.PostVO;
 import com.nuist_campuswall.dto.post.UpdatePostDTO;
 import com.nuist_campuswall.mapper.file.FileAssetMapper;
 import com.nuist_campuswall.mapper.post.PostMapper;
+import com.nuist_campuswall.mapper.user.UserMapper;
 import com.nuist_campuswall.security.UserContext;
 import com.nuist_campuswall.service.file.FileService;
 import com.nuist_campuswall.service.post.PostService;
@@ -23,12 +25,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final PostMapper postMapper;
+    private final UserMapper userMapper;
     private final FileService fileService;
     private final FileAssetMapper fileAssetMapper;
 
@@ -79,28 +84,23 @@ public class PostServiceImpl implements PostService {
     //--------------------查询帖子接口实现(公开)---------------------
     @Override
     public PageResult<PostVO> page(PagePostDTO dto) {
-        //1.创建 MyBatis-Plus 的分页对象
         Page<Post> page = new Page<>(dto.getPageNum(), dto.getPageSize());
-
-        //2.执行分页查询
         Page<Post> result = postMapper.selectPage(
                 page,
                 Wrappers.<Post>lambdaQuery()
                         .ne(Post::getUserId, adminUserId)
                         .eq(Post::getStatus, PostStatus.ENABLE)
-                        .orderByDesc(Post::getCreateTime)  //orderbydesc: 倒序排列
+                        .orderByDesc(Post::getCreateTime)
         );
 
-        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());
+        Map<Long, String> usernameMap = buildUsernameMap(result.getRecords());
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(p -> toPostVO(p, usernameMap)).toList());
     }
 
     //--------------------公告分页接口实现(公开)---------------------
     @Override
     public PageResult<PostVO> noticePage(PagePostDTO dto) {
-        //1.创建 MyBatis-Plus 的分页对象
         Page<Post> page = new Page<>(dto.getPageNum(), dto.getPageSize());
-
-        //2.执行分页查询（仅管理员帖子，作为公告）
         Page<Post> result = postMapper.selectPage(
                 page,
                 Wrappers.<Post>lambdaQuery()
@@ -109,7 +109,8 @@ public class PostServiceImpl implements PostService {
                         .orderByDesc(Post::getCreateTime)
         );
 
-        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());
+        Map<Long, String> usernameMap = buildUsernameMap(result.getRecords());
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(p -> toPostVO(p, usernameMap)).toList());
     }
 
     //--------------------我的帖子接口实现(私有)---------------
@@ -129,53 +130,52 @@ public class PostServiceImpl implements PostService {
                         .orderByDesc(Post::getCreateTime)
         );
 
-        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toPostVO).toList());
+        Map<Long, String> usernameMap = buildUsernameMap(result.getRecords());
+        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(p -> toPostVO(p, usernameMap)).toList());
     }
 
     //--------------------帖子详情接口实现---------------------
     @Override
     public PostVO detail(Long id) {
-
         Post post = postMapper.selectById(id);
-
-        //1.判断帖子是否存在
         if(post == null){
             throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
         }
-        //2.判断帖子是否公开
         if (post.getStatus() != PostStatus.ENABLE) {
             throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
         }
-        //2.返回结果
-        return toPostVO(post);
+
+        // 查询帖子作者用户名
+        String username = null;
+        User user = userMapper.selectById(post.getUserId());
+        if (user != null) {
+            username = user.getUsername();
+        }
+        Map<Long, String> usernameMap = new HashMap<>();
+        usernameMap.put(post.getUserId(), username);
+
+        return toPostVO(post, usernameMap);
     }
 
     //--------------------修改帖子接口实现---------------------
     @Override
     public void updateMyPost(Long id, UpdatePostDTO dto) {
-        // 1.登录校验
         Long userId = UserContext.getUserId();
         if (userId == null) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
         }
 
-        // 2.帖子存在校验
         Post dbPost = postMapper.selectById(id);
         if (dbPost == null) {
             throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
         }
-
-        // 3.状态校验（已删除不可修改）
         if (dbPost.getStatus() != PostStatus.ENABLE) {
             throw new BusinessException(ErrorCode.POST_STATUS_ERROR, "帖子状态错误");
         }
-
-        // 4.权限校验（只能改自己的）
         if (!userId.equals(dbPost.getUserId())) {
             throw new BusinessException(ErrorCode.NO_PERMISSION, "无权修改他人帖子");
         }
 
-        // 5.更新字段
         Post updatePost = new Post();
         updatePost.setId(id);
         updatePost.setTitle(dto.getTitle());
@@ -183,22 +183,16 @@ public class PostServiceImpl implements PostService {
         updatePost.setImageUrl(dto.getImageUrl());
         updatePost.setUpdateTime(LocalDateTime.now());
 
-        //6.图片处理
+        //图片处理
         if(dto.getFileId()!=null){
-            //6.1解绑旧图片
             fileService.markTempByBiz(FileType.POST, updatePost.getId());
-
-            //6.2绑定文件到帖子
             fileService.bindFileToBiz(dto.getFileId(), FileType.POST, updatePost.getId());
-
-            //6.3读取url并填回
             FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileId());
             if(fileAsset!=null){
                 updatePost.setImageUrl(fileAsset.getUrl());
             }
         }
 
-        //7.更新帖子
         postMapper.updateById(updatePost);
     }
 
@@ -206,39 +200,40 @@ public class PostServiceImpl implements PostService {
     //--------------------删除帖子接口实现---------------------
     @Override
     public void deleteMyPost(Long id) {
-        //1.登陆校验
         Long userId = UserContext.getUserId();
         if (userId == null) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
         }
 
-        //2.判断帖子是否存在
         Post post = postMapper.selectById(id);
         if (post == null) {
             throw new BusinessException(ErrorCode.POST_NOT_FOUND, "帖子不存在");
         }
-
-        //3.判断当前用户是否是帖子的作者
         if (!post.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.NO_PERMISSION, "无权限删除该帖子");
         }
 
-        //4.删除帖子
         Post updatePost = new Post();
         updatePost.setId(id);
         updatePost.setStatus(PostStatus.DISABLE);
         postMapper.updateById(updatePost);
 
-        //5.解绑文件
         fileService.markTempByBiz(FileType.POST, updatePost.getId());
     }
 
     //--------------------私有工具方法---------------------
-    // 1.转换 Post 到 PostVO
-    private PostVO toPostVO(Post post) {
+    private Map<Long, String> buildUsernameMap(List<Post> posts) {
+        Set<Long> userIds = posts.stream().map(Post::getUserId).collect(Collectors.toSet());
+        if (userIds.isEmpty()) return Collections.emptyMap();
+        List<User> users = userMapper.selectBatchIds(userIds);
+        return users.stream().collect(Collectors.toMap(User::getId, User::getUsername));
+    }
+
+    private PostVO toPostVO(Post post, Map<Long, String> usernameMap) {
         PostVO vo = new PostVO();
         vo.setId(post.getId());
         vo.setUserId(post.getUserId());
+        vo.setUsername(usernameMap.getOrDefault(post.getUserId(), String.valueOf(post.getUserId())));
         vo.setTitle(post.getTitle());
         vo.setContent(post.getContent());
         vo.setImageUrl(post.getImageUrl());
