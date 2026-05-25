@@ -70,13 +70,22 @@ Nuist_CampusWall/
     └── vite.config.js
 ```
 
-## 5. 回归测试
-1. 用例目录：`src/test/http`
-2. 模块用例：`account/file/post/comment/like/admin`
+## 5. ## 5. 回归测试
+### 5.1 后端 HTTP 接口测试
+1. 用例目录：src/test/http
+2. 模块用例：ccount/file/post/comment/like/admin
 3. 场景总量：95
-4. 断言标准：`HTTP 状态码 + 业务 code`
-5. 前端构建：`npm run build`（Vite + Rolldown）
+4. 断言标准：HTTP 状态码 + 业务 code
 
+### 5.2 Playwright 浏览器测试
+1. 用例文件：src/test/playwright/visible_test.cjs
+2. 场景总量：36
+3. 运行模式：可见浏览器（headless: false）
+4. 前置条件：后端 :8080 + 前端 :5173 均运行中
+5. 最近结果：36/36 全部通过（2026-05-25）
+
+### 5.3 修复记录
+图片上传修复：el-upload 需用 ileList[0].raw 获取文件，详见 doc/图片上传修复记录.md。
 ## 6. 当前结论
 1. **前后端联调已全部完成**，功能闭环可演示。
 2. 协议口径统一为三段式，文档已全量同步。
