@@ -21,14 +21,33 @@
 
       <!-- Post Image -->
       <div v-if="post.imageUrl" class="detail-image">
-        <el-image
-          :src="(post.imageUrl||'').split(',')[0]"
-          :alt="post.title"
-          :preview-src-list="(post.imageUrl||'').split(',')"
-          fit="contain"
-          :preview-teleported="true"
-          class="detail-el-image"
-        />
+        <div class="img-stage-wrap">
+          <button v-if="images.length > 1" class="img-nav-btn img-nav-left" @click="prevImage">
+            <el-icon><ArrowLeft /></el-icon>
+          </button>
+          <div class="img-stage">
+            <el-image
+              :src="images[currentImageIndex] || images[0]"
+              :alt="post.title"
+              :preview-src-list="images"
+              fit="contain"
+              :preview-teleported="true"
+              class="detail-el-image"
+            />
+          </div>
+          <button v-if="images.length > 1" class="img-nav-btn img-nav-right" @click="nextImage">
+            <el-icon><ArrowRight /></el-icon>
+          </button>
+        </div>
+        <div v-if="images.length > 1" class="img-dots">
+          <span
+            v-for="(_, i) in images"
+            :key="i"
+            class="dot"
+            :class="{ active: i === currentImageIndex }"
+            @click="currentImageIndex = i"
+          />
+        </div>
       </div>
 
       <!-- Post Content -->
@@ -191,7 +210,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, EditPen, Delete, Star, ChatDotSquare, Close, Plus, Promotion } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, EditPen, Delete, Star, ChatDotSquare, Close, Plus, Promotion } from '@element-plus/icons-vue'
 import { PostDetailApi, UpdatePostApi, DeletePostApi } from '@/api/post'
 import { commentPageApi, commentCreateApi, commentDeleteApi } from '@/api/comment'
 import { uploadFileApi } from '@/api/file'
@@ -482,10 +501,15 @@ watch(() => route.params.id, loadPost)
 
 .detail-image {
   margin: 0 auto 20px;
-  max-width: 900px;
+  max-width: 1020px;
+}
+.img-stage-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .img-stage {
-  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -500,9 +524,7 @@ watch(() => route.params.id, loadPost)
   cursor: zoom-in;
 }
 .img-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -522,8 +544,6 @@ watch(() => route.params.id, loadPost)
   background: white;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
-.img-nav-left { left: -20px; }
-.img-nav-right { right: -20px; }
 .img-dots {
   display: flex;
   justify-content: center;

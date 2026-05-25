@@ -60,15 +60,18 @@
         <h2>帖子管理</h2>
         <el-table :data="posts" stripe v-loading="postsLoading" style="width:100%">
           <el-table-column prop="postId" label="ID" width="70" />
-          <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="userId" label="作者ID" width="80" />
+          <el-table-column label="标题" min-width="200" show-overflow-tooltip>
+            <template #default="{ row }">
+              <a class="post-title-link" @click.prevent="goToPost(row.postId)">{{ row.title }}</a>
+            </template>
+          </el-table-column>
+          <el-table-column prop="username" label="作者" width="120" />
           <el-table-column label="状态" width="80">
             <template #default="{ row }"><el-tag :type="row.status==='ENABLE'?'success':'warning'" size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
-
-          <el-table-column label="操作" width="200">
+          <el-table-column label="操作" width="160">
             <template #default="{ row }">
-              <el-button size="small" @click="showPostDetail(row)">详情</el-button>
+              <el-button size="small" type="primary" @click="goToPost(row.postId)">详情</el-button>
               <el-button :type="row.status==='ENABLE'?'warning':'success'" size="small" @click="togglePost(row)">
                 {{ row.status==='ENABLE' ? '禁用' : '启用' }}
               </el-button>
@@ -92,14 +95,18 @@
         <el-table :data="comments" stripe v-loading="commentsLoading" style="width:100%">
           <el-table-column prop="commentId" label="ID" width="70" />
           <el-table-column prop="content" label="内容" min-width="250" show-overflow-tooltip />
-          <el-table-column prop="postId" label="所属帖子" width="100" />
-          <el-table-column prop="userId" label="作者ID" width="80" />
+          <el-table-column prop="floor" label="楼层" width="70" />
+          <el-table-column label="所属帖子" width="120">
+            <template #default="{ row }">
+              <a class="post-title-link" @click.prevent="goToPost(row.postId)">{{ row.postTitle || '#' + row.postId }}</a>
+            </template>
+          </el-table-column>
+          <el-table-column prop="username" label="评论人" width="120" />
           <el-table-column label="状态" width="80">
             <template #default="{ row }"><el-tag :type="row.status==='ENABLE'?'success':'warning'" size="small">{{ row.status }}</el-tag></template>
           </el-table-column>
-          <el-table-column label="操作" width="200">
+          <el-table-column label="操作" width="120">
             <template #default="{ row }">
-              <el-button size="small" @click="showCommentDetail(row)">详情</el-button>
               <el-button :type="row.status==='ENABLE'?'warning':'success'" size="small" @click="toggleComment(row)">
                 {{ row.status==='ENABLE' ? '禁用' : '启用' }}
               </el-button>
@@ -145,8 +152,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   adminPingApi, adminUserPageApi, adminEnableUserApi, adminDisableUserApi,
-  adminPostPageApi, adminPostDetailApi, adminEnablePostApi, adminDisablePostApi,
-  adminCommentPageApi, adminCommentDetailApi, adminEnableCommentApi, adminDisableCommentApi
+  adminPostPageApi, adminEnablePostApi, adminDisablePostApi,
+  adminCommentPageApi, adminEnableCommentApi, adminDisableCommentApi
 } from '../../api/admin'
 import { User, Document, ChatDotSquare } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -174,12 +181,6 @@ const commentsLoading = ref(false)
 const commentPage = ref(1)
 const commentPageSize = 10
 const commentTotal = ref(0)
-
-// Dialogs
-const postDialogVisible = ref(false)
-const postDetailData = ref(null)
-const commentDialogVisible = ref(false)
-const commentDetailData = ref(null)
 
 const onMenuSelect = (index) => {
   activeMenu.value = index
@@ -229,14 +230,6 @@ const loadPosts = async () => {
   } finally { postsLoading.value = false }
 }
 
-const showPostDetail = async (row) => {
-  try {
-    const res = await adminPostDetailApi(row.postId)
-    postDetailData.value = res.data || row
-    postDialogVisible.value = true
-  } catch (e) { postDetailData.value = row; postDialogVisible.value = true }
-}
-
 const togglePost = async (row) => {
   try {
     if (row.status === 'ENABLE') {
@@ -263,14 +256,6 @@ const loadComments = async () => {
   } finally { commentsLoading.value = false }
 }
 
-const showCommentDetail = async (row) => {
-  try {
-    const res = await adminCommentDetailApi(row.commentId)
-    commentDetailData.value = res.data || row
-    commentDialogVisible.value = true
-  } catch (e) { commentDetailData.value = row; commentDialogVisible.value = true }
-}
-
 const toggleComment = async (row) => {
   try {
     if (row.status === 'ENABLE') {
@@ -282,6 +267,10 @@ const toggleComment = async (row) => {
     }
     loadComments()
   } catch (e) { ElMessage.error(e.message || '操作失败') }
+}
+
+const goToPost = (postId) => {
+  router.push('/post/' + postId)
 }
 
 onMounted(async () => {
@@ -329,5 +318,13 @@ onMounted(async () => {
   .admin-sidebar { width: 60px; }
   .admin-sidebar :deep(.el-menu-item span) { display: none; }
   .admin-content { padding: 16px; }
+}
+.post-title-link {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+.post-title-link:hover {
+  text-decoration: underline;
 }
 </style>

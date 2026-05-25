@@ -11,6 +11,8 @@ import com.nuist_campuswall.dto.admin.AdminCommentPageDTO;
 import com.nuist_campuswall.dto.admin.AdminCommentVO;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.mapper.comment.CommentMapper;
+import com.nuist_campuswall.mapper.user.UserMapper;
+import com.nuist_campuswall.mapper.post.PostMapper;
 import com.nuist_campuswall.service.admin.auth.AdminAuthService;
 import com.nuist_campuswall.service.admin.comment.AdminCommentService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 public class AdminCommentServiceImpl implements AdminCommentService {
 
     private final CommentMapper commentMapper;
+    private final UserMapper userMapper;
+    private final PostMapper postMapper;
     private final AdminAuthService adminAuthService;
 
     //--------------------评论分页接口实现---------------------
@@ -108,7 +112,19 @@ public class AdminCommentServiceImpl implements AdminCommentService {
         AdminCommentVO vo = new AdminCommentVO();
         vo.setCommentId(comment.getId());
         vo.setPostId(comment.getPostId());
+        vo.setContent(comment.getContent());
         vo.setUserId(comment.getUserId());
+        com.nuist_campuswall.domain.user.User user = userMapper.selectById(comment.getUserId());
+        vo.setUsername(user != null ? user.getUsername() : null);
+        com.nuist_campuswall.domain.post.Post post = postMapper.selectById(comment.getPostId());
+        vo.setPostTitle(post != null ? post.getTitle() : null);
+        // 计算楼层：同帖子下 id 更小的评论数 + 1
+        Long floor = commentMapper.selectCount(
+            com.baomidou.mybatisplus.core.toolkit.Wrappers.<com.nuist_campuswall.domain.comment.Comment>lambdaQuery()
+                .eq(com.nuist_campuswall.domain.comment.Comment::getPostId, comment.getPostId())
+                .lt(com.nuist_campuswall.domain.comment.Comment::getId, comment.getId())
+        );
+        vo.setFloor(floor != null ? floor.intValue() + 1 : 1);
         vo.setStatus(comment.getStatus());
         return vo;
     }
