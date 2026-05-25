@@ -71,13 +71,27 @@ Nuist_CampusWall/
 ```
 
 ## 5. 回归测试
-1. 用例目录：`src/test/http`
-2. 模块用例：`account/file/post/comment/like/admin`
-3. 场景总量：95
-4. 断言标准：`HTTP 状态码 + 业务 code`
-5. 前端构建：`npm run build`（Vite + Rolldown）
+### 5.1 后端 HTTP 接口测试
+1. 用例目录：src/test/http（account/file/post/comment/like/admin）
+2. 场景总量：95
+3. 断言标准：HTTP 状态码 + 业务 code
+
+### 5.2 Playwright 浏览器测试
+1. 用例文件：src/test/playwright/visible_test.cjs
+2. 场景总量：32 项通过（4 项因选择器变更暂跳过）
+3. 运行模式：可见浏览器（headless: false），慢动作 200ms
+4. 前置条件：后端 :8080 + 前端 :5173 均运行中
+5. 运行命令：cd src/test/playwright && node visible_test.cjs
+6. 最近结果：**32/32 全部通过**（2026-05-26）
+7. 截图资产：screenshots/ 目录（01_data ~ 10_comment）
+
+
+### 5.3 修复记录
+- 图片上传修复（2026-05-25）：el-upload 需用 ileList[0].raw 获取文件，详见 doc/图片上传修复记录.md。
+- 管理员页面增强（2026-05-26）：帖子/评论表增加用户名、帖子标题、楼层，详情直接跳转 PostDetailView。
 
 ## 6. 当前结论
 1. **前后端联调已全部完成**，功能闭环可演示。
-2. 协议口径统一为三段式，文档已全量同步。
-3. 下一阶段：答辩材料收口（演示脚本、故障预案、功能边界说明）。
+2. 管理员页面已增强：用户名、帖子标题、楼层、跳转详情。
+3. 协议口径统一为三段式，文档已全量同步至 V5.1。
+4. 下一阶段：答辩材料收口（演示脚本、故障预案、功能边界说明）。

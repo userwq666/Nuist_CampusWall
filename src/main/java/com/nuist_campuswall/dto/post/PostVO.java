@@ -15,6 +15,8 @@ public class PostVO {
     private Long id;
     // 作者用户ID
     private Long userId;
+    // 作者用户名
+    private String username;
     // 标题
     private String title;
     // 内容
@@ -27,4 +29,3 @@ public class PostVO {
     private LocalDateTime createTime;
 
 }
-

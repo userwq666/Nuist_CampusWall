@@ -9,6 +9,7 @@ import com.nuist_campuswall.domain.enums.CommentStatus;
 import com.nuist_campuswall.domain.enums.FileType;
 import com.nuist_campuswall.domain.file.FileAsset;
 import com.nuist_campuswall.domain.post.Post;
+import com.nuist_campuswall.domain.user.User;
 import com.nuist_campuswall.dto.comment.CommentVO;
 import com.nuist_campuswall.dto.comment.CreateCommentDTO;
 import com.nuist_campuswall.dto.comment.MyPageCommentDTO;
@@ -17,13 +18,15 @@ import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.mapper.comment.CommentMapper;
 import com.nuist_campuswall.mapper.file.FileAssetMapper;
 import com.nuist_campuswall.mapper.post.PostMapper;
+import com.nuist_campuswall.mapper.user.UserMapper;
 import com.nuist_campuswall.security.UserContext;
 import com.nuist_campuswall.service.comment.CommentService;
 import com.nuist_campuswall.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,25 +34,23 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
+    private final UserMapper userMapper;
     private final FileService fileService;
     private final FileAssetMapper fileAssetMapper;
 
     //---------------创建评论接口实现------------------
     @Override
     public void create(CreateCommentDTO dto) {
-        //1.读取当前用户
         Long userId = UserContext.getUserId();
         if (userId == null) {
            throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
         }
 
-        //2.读取当前帖子
         Post post = postMapper.selectById(dto.getPostId());
         if (post == null) {
             throw new BusinessException(ErrorCode.POST_NOT_FOUND, "目标帖子不存在");
         }
 
-        //3.组装评论实体
         Comment comment = new Comment();
         comment.setUserId(userId);
         comment.setPostId(dto.getPostId());
@@ -61,15 +62,11 @@ public class CommentServiceImpl implements CommentService {
         comment.setLikeCount(0);
         comment.setCreateTime(java.time.LocalDateTime.now());
 
-        //4.插入评论
         commentMapper.insert(comment);
 
-        //5.文件绑定
         if(dto.getFileId()!=null){
-            //5.1绑定文件到评论
             fileService.bindFileToBiz(dto.getFileId(), FileType.COMMENT,comment.getId());
 
-            //5.2读取url并填回
             FileAsset fileAsset = fileAssetMapper.selectById(dto.getFileId());
             if(fileAsset!=null){
                 Comment updataComment =new Comment();
@@ -83,20 +80,61 @@ public class CommentServiceImpl implements CommentService {
     //---------------查询评论接口实现(公开)------------------
     @Override
     public PageResult<CommentVO> page(PageCommentDTO dto) {
-        //创建 MyBatis-Plus 的分页对象
-        Page<Comment> page = new Page<>(dto.getPageNum(), dto.getPageSize());
+        // 1. 先查帖子，获取帖子作者
+        Post post = postMapper.selectById(dto.getPostId());
+        String postAuthorUsername = null;
+        if (post != null) {
+            User postAuthor = userMapper.selectById(post.getUserId());
+            postAuthorUsername = postAuthor != null ? postAuthor.getUsername() : null;
+        }
 
-        //执行分页查询
+        // 2. 查询当前帖子所有已启用评论的ID（用于计算楼层号）
+        List<Comment> allComments = commentMapper.selectList(
+                Wrappers.<Comment>lambdaQuery()
+                        .select(Comment::getId, Comment::getCreateTime)
+                        .eq(Comment::getPostId, dto.getPostId())
+                        .eq(Comment::getStatus, CommentStatus.ENABLE)
+                        .orderByAsc(Comment::getCreateTime)
+        );
+        Map<Long, Integer> floorMap = new HashMap<>();
+        for (int i = 0; i < allComments.size(); i++) {
+            floorMap.put(allComments.get(i).getId(), i + 1);
+        }
+
+        // 3. 分页查询评论
+        Page<Comment> page = new Page<>(dto.getPageNum(), dto.getPageSize());
         Page<Comment> result = commentMapper.selectPage(
                 page,
                 Wrappers.<Comment>lambdaQuery()
                         .eq(Comment::getPostId, dto.getPostId())
                         .eq(Comment::getStatus, CommentStatus.ENABLE)
-                        .orderByDesc(Comment::getCreateTime)
+                        .orderByAsc(Comment::getCreateTime)
         );
 
-        //将 MyBatis-Plus 的 Page 对象转换为 PageResult 对象且返回
-        return new PageResult<>(result.getTotal(), result.getRecords().stream().map(this::toCommentVO).toList());
+        List<Comment> comments = result.getRecords();
+
+        // 4. 批量查询所有相关用户的用户名
+        Set<Long> userIds = new HashSet<>();
+        for (Comment c : comments) {
+            userIds.add(c.getUserId());
+            if (c.getReplyToUserId() != null) {
+                userIds.add(c.getReplyToUserId());
+            }
+        }
+        Map<Long, String> usernameMap = Collections.emptyMap();
+        if (!userIds.isEmpty()) {
+            List<User> users = userMapper.selectBatchIds(userIds);
+            usernameMap = users.stream().collect(Collectors.toMap(User::getId, User::getUsername));
+        }
+
+        // 5. 转换为 CommentVO
+        final String finalPostAuthorUsername = postAuthorUsername;
+        final Map<Long, String> finalUsernameMap = usernameMap;
+        List<CommentVO> records = comments.stream()
+                .map(c -> toCommentVO(c, finalPostAuthorUsername, finalUsernameMap, floorMap))
+                .toList();
+
+        return new PageResult<>(result.getTotal(), records);
     }
 
     //---------------查询评论接口实现(私有)------------------
@@ -116,7 +154,25 @@ public class CommentServiceImpl implements CommentService {
                         .orderByDesc(Comment::getCreateTime)
         );
 
-        List<CommentVO> records = result.getRecords().stream().map(this::toCommentVO).toList();
+        Set<Long> userIds = new HashSet<>();
+        for (Comment c : result.getRecords()) {
+            userIds.add(c.getUserId());
+            if (c.getReplyToUserId() != null) {
+                userIds.add(c.getReplyToUserId());
+            }
+        }
+        Map<Long, String> usernameMap;
+        if (!userIds.isEmpty()) {
+            List<User> users = userMapper.selectBatchIds(userIds);
+            usernameMap = users.stream().collect(Collectors.toMap(User::getId, User::getUsername));
+        } else {
+            usernameMap = Collections.emptyMap();
+        }
+
+        // 我的评论列表不关心楼层号和帖子作者
+        List<CommentVO> records = result.getRecords().stream()
+                .map(c -> toCommentVO(c, null, usernameMap, Collections.emptyMap()))
+                .toList();
         return new PageResult<>(result.getTotal(), records);
     }
 
@@ -124,39 +180,36 @@ public class CommentServiceImpl implements CommentService {
     //---------------删除评论接口实现------------------
     @Override
     public void deleteMyComment(Long id) {
-        // 1) 登录校验
         Long userId = UserContext.getUserId();
         if (userId == null) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "当前未登录或token缺失");
         }
 
-        // 2) 评论存在校验
         Comment dbComment = commentMapper.selectById(id);
         if (dbComment == null) {
             throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND, "评论不存在");
         }
 
-        // 3) 权限校验：只能删自己的评论
         if (!userId.equals(dbComment.getUserId())) {
             throw new BusinessException(ErrorCode.NO_PERMISSION, "无权删除他人评论");
         }
 
-        // 4) 软删除
         Comment updateComment = new Comment();
         updateComment.setId(id);
         updateComment.setStatus(CommentStatus.DISABLE);
         commentMapper.updateById(updateComment);
 
-        // 5) 删除文件绑定
         fileService.markTempByBiz(FileType.COMMENT, updateComment.getId());
     }
 
 
     //---------------私有工具方法------------------
-    private CommentVO toCommentVO(Comment comment) {
+    private CommentVO toCommentVO(Comment comment, String postAuthorUsername,
+                                   Map<Long, String> usernameMap, Map<Long, Integer> floorMap) {
         CommentVO vo = new CommentVO();
         vo.setId(comment.getId());
         vo.setUserId(comment.getUserId());
+        vo.setUsername(usernameMap.getOrDefault(comment.getUserId(), String.valueOf(comment.getUserId())));
         vo.setPostId(comment.getPostId());
         vo.setContent(comment.getContent());
         vo.setImageUrl(comment.getImageUrl());
@@ -164,6 +217,13 @@ public class CommentServiceImpl implements CommentService {
         vo.setCreateTime(comment.getCreateTime());
         vo.setReplyToCommentId(comment.getReplyToCommentId());
         vo.setReplyToUserId(comment.getReplyToUserId());
+        if (comment.getReplyToUserId() != null) {
+            vo.setReplyToUsername(usernameMap.getOrDefault(comment.getReplyToUserId(), String.valueOf(comment.getReplyToUserId())));
+        }
+        if (comment.getReplyToCommentId() != null) {
+            vo.setReplyToFloor(floorMap.get(comment.getReplyToCommentId()));
+        }
+        vo.setPostAuthorUsername(postAuthorUsername);
         return vo;
     }
 }

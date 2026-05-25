@@ -3,6 +3,7 @@ package com.nuist_campuswall.dto.post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import java.util.List;
 
 //发帖DTO
 @Data
@@ -18,5 +19,5 @@ public class CreatePostDTO {
     // 图片链接
     private String imageUrl;
     //图片ID
-    private Long fileID;
+    private List<Long> fileIds;
 }

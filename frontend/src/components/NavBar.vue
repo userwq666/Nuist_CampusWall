@@ -18,7 +18,6 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="profile"><el-icon><User /></el-icon>个人资料</el-dropdown-item>
-                <el-dropdown-item command="myPosts"><el-icon><Document /></el-icon>我的帖子</el-dropdown-item>
                 <el-dropdown-item v-if="isAdmin" command="admin"><el-icon><Setting /></el-icon>管理后台</el-dropdown-item>
                 <el-dropdown-item divided command="logout"><el-icon><SwitchButton /></el-icon>退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -70,7 +69,6 @@ function handleCommand(command) {
   if (command === 'logout') handleLogout()
   else if (command === 'profile') router.push('/profile')
   else if (command === 'admin') router.push('/admin')
-  else if (command === 'myPosts') router.push('/post?tab=my')
 }
 function doSearch() {
   const q = searchText.value.trim()

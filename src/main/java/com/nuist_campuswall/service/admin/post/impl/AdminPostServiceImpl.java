@@ -11,6 +11,7 @@ import com.nuist_campuswall.dto.admin.AdminPostPageDTO;
 import com.nuist_campuswall.dto.admin.AdminPostVO;
 import com.nuist_campuswall.dto.common.PageResult;
 import com.nuist_campuswall.mapper.post.PostMapper;
+import com.nuist_campuswall.mapper.user.UserMapper;
 import com.nuist_campuswall.service.admin.auth.AdminAuthService;
 import com.nuist_campuswall.service.admin.post.AdminPostService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class AdminPostServiceImpl implements AdminPostService {
 
     private final PostMapper postMapper;
+    private final UserMapper userMapper;
     private final AdminAuthService adminAuthService;
 
     //--------------------帖子分页接口实现---------------------
@@ -106,7 +108,10 @@ public class AdminPostServiceImpl implements AdminPostService {
         AdminPostVO vo = new AdminPostVO();
         vo.setPostId(post.getId());
         vo.setTitle(post.getTitle());
+        vo.setContent(post.getContent());
         vo.setUserId(post.getUserId());
+        com.nuist_campuswall.domain.user.User user = userMapper.selectById(post.getUserId());
+        vo.setUsername(user != null ? user.getUsername() : null);
         vo.setStatus(post.getStatus());
         return vo;
     }

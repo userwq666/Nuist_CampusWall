@@ -4,7 +4,6 @@ import request from './request'
 export function uploadFileApi(file, fileType) {
     const formData = new FormData()
     formData.append('file', file)
-    return request.post('/file/upload?fileType=' + fileType, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    // 不手动设置 Content-Type，让 axios 自动生成正确的 multipart/form-data; boundary=...
+    return request.post('/file/upload?fileType=' + fileType, formData)
 }

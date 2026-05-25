@@ -3,6 +3,7 @@ package com.nuist_campuswall.dto.post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class UpdatePostDTO {
@@ -16,5 +17,5 @@ public class UpdatePostDTO {
 
     private String imageUrl;
 
-    private Long fileId;
+    private List<Long> fileIds;
 }
