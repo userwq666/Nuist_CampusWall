@@ -14,3 +14,7 @@ export function undoLikeApi(data) {
 export function checkLikeApi(data) {
     return request.post('/like/check', data)
 }
+
+// 别名（PostDetailView 使用）
+export { doLikeApi as likePostApi }
+export { undoLikeApi as unlikePostApi }
