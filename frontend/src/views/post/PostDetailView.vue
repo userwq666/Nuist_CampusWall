@@ -165,7 +165,6 @@ const totalComments = ref(0)
 const loading = ref(false)
 const errorMsg = ref('')
 const commentText = ref('')
-const commentFileToUpload = ref(null)
 const commentFileList = ref([])
 const replyTo = ref(null)
 const hasMoreComments = ref(false)
@@ -236,8 +235,9 @@ const submitComment = async () => {
   if (!commentText.value.trim()) return
   try {
     let fileId = null
-    if (commentFileToUpload.value) {
-      const res = await uploadFileApi(commentFileToUpload.value, 'COMMENT')
+    const uploadFile = commentFileList.value[0]?.raw
+    if (uploadFile) {
+      const res = await uploadFileApi(uploadFile, 'COMMENT')
       fileId = res.data
       if (!fileId) { ElMessage.warning('上传成功但未获取到文件 ID'); return }
     }
@@ -252,9 +252,7 @@ const submitComment = async () => {
     }
     await commentCreateApi(dto)
     commentText.value = ''
-    commentFileList.value = []
-    commentFileToUpload.value = null
-    replyTo.value = null
+    commentFileList.value = []    replyTo.value = null
     loadComments(true)
   } catch (e) {
     ElMessage.error(e.message || '评论失败')
@@ -266,8 +264,7 @@ const handleCommentBeforeUpload = (file) => {
   const isLt5M = file.size / 1024 / 1024 < 5
   if (!isImage) { ElMessage.error('只能上传图片文件'); return false }
   if (!isLt5M) { ElMessage.error('图片大小不能超过 5MB'); return false }
-  commentFileToUpload.value = file
-  return false
+  return true
 }
 
 const startReply = (comment) => {

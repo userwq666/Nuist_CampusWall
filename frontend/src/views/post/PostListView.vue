@@ -212,13 +212,11 @@ const loadMore = () => {
 // Create post form
 const createForm = reactive({ title: '', content: '', fileList: [] })
 const createLoading = ref(false)
-let fileToUpload = null  // non-reactive to avoid Proxy wrapper issues with FormData
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const handleBeforeUpload = (file) => {
   if (file.type && !ALLOWED_TYPES.includes(file.type)) { ElMessage.warning('仅支持 JPG/PNG/GIF/WebP 格式'); return false }
   if (file.size / 1024 / 1024 > 5) { ElMessage.warning('图片大小不能超过 5MB'); return false }
-  fileToUpload = file
   return true
 }
 
@@ -226,9 +224,11 @@ const doCreatePost = async () => {
   if (!isLoggedIn.value) { router.push('/login'); return }
   createLoading.value = true
   try {
+    // 从 el-upload 的 fileList 中获取 raw File（Element Plus 标准做法）
+    const uploadFile = createForm.fileList[0]?.raw
     let fileId = null
-    if (fileToUpload) {
-      const res = await uploadFileApi(fileToUpload, 'POST')
+    if (uploadFile) {
+      const res = await uploadFileApi(uploadFile, 'POST')
       fileId = res.data
       if (!fileId) { ElMessage.warning('上传成功但未获取到文件 ID'); return }
     }
@@ -253,8 +253,7 @@ const onCreateClosed = () => {
   createForm.title = ''
   createForm.content = ''
   createForm.fileList = []
-  fileToUpload = null
-}
+  }
 
 onMounted(() => {
   // Check URL tab param
