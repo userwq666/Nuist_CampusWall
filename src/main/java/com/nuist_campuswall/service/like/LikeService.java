@@ -10,3 +10,4 @@ public interface LikeService {
     //取消点赞接口
     public void unlike(UnlikeDTO dto);
 }
+

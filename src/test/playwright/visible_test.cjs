@@ -74,6 +74,8 @@ async function shot(page, label) {
       await shot(page, "01_empty");
     } else if (cardEl > 0) {
       ok("Data 状态: 帖子卡片渲染 (" + cardEl + " 张)");
+      const cardImgs = await page.locator(".post-card img").count();
+      if (cardImgs > 0) ok("帖子卡片图片渲染 (" + cardImgs + " 张)", true);
       await shot(page, "01_data");
     } else {
       no("页面未显示任何有效状态");
@@ -192,14 +194,22 @@ async function shot(page, label) {
       await page.locator(".el-dialog input").first().fill("测试帖子_" + ts);
       await page.locator(".el-dialog textarea").first().fill("E2E 自动测试帖子正文。");
 
+            // 上传图片并验证缩略图出现
+      let imgUploaded = false;
       if (fs.existsSync(TEST_IMG)) {
         const fi = page.locator('.el-upload input[type="file"]');
         if (await fi.count() > 0) {
           await fi.setInputFiles(TEST_IMG);
-          await page.waitForTimeout(1200);
-          ok("图片上传选择", true);
+          // 等待 el-upload 缩略图出现
+          try {
+            await page.waitForSelector('.el-upload-list__item-thumbnail', { timeout: 5000 });
+            imgUploaded = true;
+          } catch (_) {
+            // 缩略图未出现
+          }
         }
       }
+      ok("图片上传并显示缩略图", imgUploaded);
 
       await page.locator(".el-dialog .el-button--primary").last().click();
       await page.waitForTimeout(2500);
@@ -238,6 +248,8 @@ async function shot(page, label) {
         ok("正文渲染", await page.locator(".detail-content").count() > 0);
         ok("操作栏渲染", await page.locator(".detail-actions").count() > 0);
         ok("评论输入区", await page.locator(".comment-input-area").count() > 0);
+        const hasDetailImg = await page.locator(".detail-image img").count() > 0;
+        if (hasDetailImg) ok("详情页图片渲染", true);
 
         const commentCount = await page.locator(".comment-item").count();
         if (commentCount > 0) ok("评论列表: 有评论", true);
@@ -303,3 +315,5 @@ async function shot(page, label) {
     process.exit(1);
   }
 })();
+
+
