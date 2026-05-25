@@ -252,7 +252,8 @@ const submitComment = async () => {
     }
     await commentCreateApi(dto)
     commentText.value = ''
-    commentFileList.value = []    replyTo.value = null
+    commentFileList.value = []
+    replyTo.value = null
     loadComments(true)
   } catch (e) {
     ElMessage.error(e.message || '评论失败')
