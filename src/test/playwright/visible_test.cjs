@@ -1,4 +1,4 @@
-﻿const { chromium } = require("playwright");
+const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
 
@@ -194,19 +194,21 @@ async function shot(page, label) {
       await page.locator(".el-dialog input").first().fill("测试帖子_" + ts);
       await page.locator(".el-dialog textarea").first().fill("E2E 自动测试帖子正文。");
 
-            // 上传图片并验证缩略图出现
+            // 用 fileChooser 触发真正的 before-upload 钩子
       let imgUploaded = false;
       if (fs.existsSync(TEST_IMG)) {
-        const fi = page.locator('.el-upload input[type="file"]');
-        if (await fi.count() > 0) {
-          await fi.setInputFiles(TEST_IMG);
-          // 等待 el-upload 缩略图出现
+        const uploadArea = page.locator('.el-upload');
+        if (await uploadArea.count() > 0) {
+          const [fileChooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            uploadArea.first().click()
+          ]);
+          await fileChooser.setFiles(TEST_IMG);
+          // 等待 el-upload 缩略图出现（证明 before-upload 成功）
           try {
             await page.waitForSelector('.el-upload-list__item-thumbnail', { timeout: 5000 });
             imgUploaded = true;
-          } catch (_) {
-            // 缩略图未出现
-          }
+          } catch (_) {}
         }
       }
       ok("图片上传并显示缩略图", imgUploaded);
