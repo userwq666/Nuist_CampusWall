@@ -262,7 +262,7 @@ const submitComment = async () => {
 }
 
 const handleCommentBeforeUpload = (file) => {
-  const isImage = file.type.startsWith('image/')
+  const isImage = file.type && file.type.startsWith('image/')
   const isLt5M = file.size / 1024 / 1024 < 5
   if (!isImage) { ElMessage.error('只能上传图片文件'); return false }
   if (!isLt5M) { ElMessage.error('图片大小不能超过 5MB'); return false }
