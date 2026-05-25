@@ -15,19 +15,28 @@ npm run build
 ```
 
 ## 2. 当前页面
-1. `/login` 登录页
-2. `/register` 注册页
-3. `/post` 帖子列表页
-4. `/post/:id` 帖子详情页
-5. `/admin` 管理页
+| 路径 | 组件 | 守卫 | 说明 |
+|------|------|------|------|
+| `/login` | LoginView | guestOnly | 登录 |
+| `/register` | RegisterView | guestOnly | 注册 |
+| `/post` | PostListView | 开放 | 帖子瀑布流 |
+| `/post/:id` | PostDetailView | requiresAuth | 详情+评论 |
+| `/profile` | ProfileEditView | requiresAuth | 个人信息修改 |
+| `/admin` | AdminView | requiresAdmin | 管理后台 |
 
-## 3. 文档入口
+## 3. 项目结构
+```
+frontend/
+├── src/
+│   ├── api/          # 接口封装（request.js + 模块化 api）
+│   ├── components/   # 公共组件（NavBar.vue）
+│   ├── router/       # 路由 + 守卫
+│   ├── stores/       # Pinia 状态（auth store）
+│   └── views/        # 页面（account / post / admin）
+├── doc/              # 前端文档（6 份）
+├── index.html
+└── vite.config.js
+```
+
+## 4. 文档入口
 请先阅读：`frontend/doc/文档索引.md`
-
-核心文档：
-1. `frontend/doc/页面与路由说明.md`
-2. `frontend/doc/接口联调手册.md`
-3. `frontend/doc/开发计划.md`
-4. `frontend/doc/样式与组件规范.md`
-5. `frontend/doc/调试与排障.md`
-6. `frontend/doc/开发日志.md`

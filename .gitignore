@@ -22,6 +22,10 @@ frontend/.cache/
 .DS_Store
 Thumbs.db
 
+# Playwright test artifacts
+.playwright-cli/
+frontend/test_pages.cjs
+
 # Local env files
 .env
 .env.*

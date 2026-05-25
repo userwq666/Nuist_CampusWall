@@ -2,16 +2,31 @@ package com.nuist_campuswall.config;
 
 import com.nuist_campuswall.security.JwtAuthInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 // web mvc配置类
 @Configuration
 @RequiredArgsConstructor
-public class WebMvcConfig implements WebMvcConfigurer {   //webconfigurer接口，用于配置拦截器
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Value("${app.file.local-root}")
+    private String localRoot;
+
+    @Value("${app.file.url-prefix}")
+    private String urlPrefix;
 
     private final JwtAuthInterceptor jwtAuthInterceptor;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String uploadPath = localRoot.endsWith("/") || localRoot.endsWith("\\") ? localRoot : localRoot + "/";
+        registry.addResourceHandler(urlPrefix + "/**")
+                .addResourceLocations("file:" + uploadPath);
+    }
 
     @Override            //addInterceptors方法，用于添加拦截器,参数为拦截器注册器
     public void addInterceptors(InterceptorRegistry registry) {

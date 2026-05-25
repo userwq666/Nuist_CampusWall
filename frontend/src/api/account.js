@@ -14,3 +14,9 @@ export function registerApi(payload) {
 export function getUserInfoApi() {
     return request.get('/account/my')
 }
+
+
+// 更新个人信息接口
+export function updateMyInfoApi(data) {
+    return request.post('/account/my/update', data)
+}
