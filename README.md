@@ -58,7 +58,7 @@ Nuist_CampusWall/
 ├── src/main/java/.../        # 后端：controller / service / mapper / domain / dto / common / security / config
 ├── src/main/resources/       # 后端：配置 + SQL 初始化脚本
 ├── src/test/http/            # HTTP 接口测试用例（95 个）
-├── doc/                      # 全量项目文档（11 份）
+├── docs/                      # 全量项目文档（11 份）
 └── frontend/
     ├── src/
     │   ├── api/              # 接口封装（request.js + 模块 api）
