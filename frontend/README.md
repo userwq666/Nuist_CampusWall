@@ -2,9 +2,11 @@
 
 前端技术栈：`Vue 3 + Vite + Axios + Pinia + Vue Router + Element Plus`。
 
+最后同步：2026-06-10（与后端开发内容保持一致，V5.1）
+
 ## 1. 启动方式
 ```powershell
-cd D:\javacode\javaweb\Nuist_CampusWall\frontend
+cd frontend
 npm install
 npm run dev
 ```
