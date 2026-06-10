@@ -2,14 +2,16 @@
 
 基于 `Spring Boot + Vue 3` 的校园墙课程项目，前后端已闭环，可演示、可答辩。
 
+最后同步：2026-06-10（文档已同步至当前开发状态，V5.1）
+
 ## 1. 项目定位
 1. 面向校园社区场景，提供账户、发帖、评论、点赞、个人中心与管理员治理能力。
-2. 采用"后端先闭环、前端后联调"的推进策略。
+2. 采用“后端先闭环、前端后联调”的推进策略。
 3. 通过统一鉴权、统一异常、统一返回协议降低联调成本。
 
 ## 2. 功能完成度
 
-### 2.1 用户端（前端 + 后端）
+### 2.1 用��端（前端 + 后端）
 | 模块 | 后端接口 | 前端页面 | 状态 |
 |------|---------|---------|------|
 | 账户注册/登录 | `POST /api/account/register` `POST /api/account/login` | `LoginView` `RegisterView` | ✅ |
@@ -18,22 +20,6 @@
 | 评论 | 创建/分页/我的/删除 | `PostDetailView`（楼中楼嵌套） | ✅ |
 | 点赞 | `POST /api/like/do` `POST /api/like/undo` | `PostDetailView`（点赞/取消） | ✅ |
 | 文件上传 | `POST /api/file/upload`（POST/COMMENT/AVATAR） | 帖子发布/评论/头像 | ✅ |
-
-### 2.2 管理端
-| 功能 | 后端接口 | 前端页面 | 状态 |
-|------|---------|---------|------|
-| 管理员鉴权 | `GET /api/admin/ping` | `AdminView`（权限校验） | ✅ |
-| 用户治理 | 分页/启用/禁用 | `AdminView`（分页表格+详情弹窗） | ✅ |
-| 帖子治理 | 分页/详情/启用/禁用 | `AdminView`（分页表格+详情弹窗） | ✅ |
-| 评论治理 | 分页/详情/启用/禁用 | `AdminView`（分页表格+详情弹窗） | ✅ |
-
-### 2.3 通用能力
-1. JWT：`JwtUtil + JwtAuthInterceptor + UserContext`
-2. 统一返回：`Result<T> = { code, message, data }`
-3. 统一异常：`BusinessException + GlobalExceptionHandler`
-4. 映射器：`ErrorCodeToHttpStatus`（业务码 -> HTTP 状态）
-5. 文件生命周期：`TEMP -> BOUND -> TEMP -> DELETED`
-6. 前端路由守卫：`guestOnly / requiresAuth / requiresAdmin`
 
 ## 3. 技术栈
 
@@ -61,7 +47,7 @@ Nuist_CampusWall/
 ├── docs/                      # 全量项目文档（11 份）
 └── frontend/
     ├── src/
-    │   ├── api/              # 接口封装（request.js + 模块 api）
+    │   ├── api/              # 接口封装（request.js + 模块 api)
     │   ├── components/       # 公共组件（NavBar.vue）
     │   ├── router/           # 路由配置 + 守卫
     │   ├── stores/           # Pinia 状态（auth）
@@ -85,13 +71,8 @@ Nuist_CampusWall/
 6. 最近结果：**32/32 全部通过**（2026-05-26）
 7. 截图资产：screenshots/ 目录（01_data ~ 10_comment）
 
-
-### 5.3 修复记录
-- 图片上传修复（2026-05-25）：el-upload 需用 ileList[0].raw 获取文件，详见 doc/图片上传修复记录.md。
-- 管理员页面增强（2026-05-26）：帖子/评论表增加用户名、帖子标题、楼层，详情直接跳转 PostDetailView。
-
 ## 6. 当前结论
 1. **前后端联调已全部完成**，功能闭环可演示。
 2. 管理员页面已增强：用户名、帖子标题、楼层、跳转详情。
-3. 协议口径统一为三段式，文档已全量同步至 V5.1。
+3. 协议口径统一为三段式，文档已全量同步至 V5.1（最后同步：2026-06-10）。
 4. 下一阶段：答辩材料收口（演示脚本、故障预案、功能边界说明）。
