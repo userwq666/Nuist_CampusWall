@@ -9,7 +9,7 @@ const request = axios.create({
 // 请求拦截：自动携带 token
 request.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = sessionStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }

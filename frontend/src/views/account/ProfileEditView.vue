@@ -23,22 +23,19 @@
       <template v-else>
         <div class="avatar-card">
           <div class="avatar-wrap">
-            <el-avatar :size="88" :src="form.imageUrl || undefined" class="profile-avatar">
+            <el-avatar :size="88" :src="previewUrl || form.imageUrl || undefined" class="profile-avatar">
               {{ form.nickname?.charAt(0) || 'U' }}
             </el-avatar>
-            <el-upload
-              :before-upload="handleBeforeUpload"
-              :auto-upload="false"
-              :limit="1"
-              accept="image/*"
-              :show-file-list="false"
-              class="avatar-uploader"
-            >
-              <button class="avatar-overlay">
-                <el-icon><Camera /></el-icon>
-                <span>更换</span>
-              </button>
-            </el-upload>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.gif,.webp"
+              class="avatar-input"
+              @change="onAvatarFileChange"
+            />
+            <button class="avatar-overlay" @click="$event.target.previousElementSibling.click()">
+              <el-icon><Camera /></el-icon>
+              <span>更换</span>
+            </button>
           </div>
           <div class="avatar-info">
             <div class="avatar-nickname">{{ form.nickname || '未设置昵称' }}</div>
@@ -75,6 +72,24 @@
       </template>
     </div>
   </div>
+
+    <!-- Crop Dialog -->
+    <el-dialog v-model="showCrop" title="裁切头像" width="420px" :close-on-click-modal="false" @closed="onCropClosed">
+      <div class="crop-wrapper">
+        <Cropper
+          ref="cropperRef"
+          :src="cropImg"
+          :stencil-component="CircleStencil"
+          :stencil-props="{ aspectRatio: 1 }"
+          :auto-zoom="true"
+          class="crop-cropper"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="showCrop = false">取消</el-button>
+        <el-button type="primary" @click="confirmCrop">确定</el-button>
+      </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -84,6 +99,8 @@ import { getUserInfoApi, updateMyInfoApi } from '../../api/account'
 import { uploadFileApi } from '../../api/file'
 import { useAuthStore } from '../../stores/auth'
 import { ArrowLeft, Camera } from '@element-plus/icons-vue'
+import { Cropper, CircleStencil } from 'vue-advanced-cropper'
+import 'vue-advanced-cropper/dist/style.css'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -99,7 +116,12 @@ const form = reactive({
 const loading = ref(true)
 const errorMsg = ref('')
 const saving = ref(false)
-const fileToUpload = ref(null)
+const avatarFileList = ref([])
+const previewUrl = ref('')
+// crop
+const showCrop = ref(false)
+const cropImg = ref('')
+const cropperRef = ref(null)
 
 const loadProfile = async () => {
   loading.value = true
@@ -120,14 +142,35 @@ const loadProfile = async () => {
   }
 }
 
-const handleBeforeUpload = (file) => {
+const onAvatarFileChange = (e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
   const isImage = file.type.startsWith('image/')
   const isLt5M = file.size / 1024 / 1024 < 5
-  if (!isImage) { ElMessage.warning('只能上传图片文件'); return false }
-  if (!isLt5M) { ElMessage.warning('图片大小不能超过 5MB'); return false }
-  fileToUpload.value = file
-  return false
+  if (!isImage) { ElMessage.warning('只能上传图片文件'); return }
+  if (!isLt5M) { ElMessage.warning('图片大小不能超过 5MB'); return }
+  cropImg.value = URL.createObjectURL(file)
+  showCrop.value = true
+  e.target.value = ''
 }
+const confirmCrop = () => {
+  const { canvas } = cropperRef.value.getResult()
+  if (!canvas) return
+  canvas.toBlob((blob) => {
+    const f = new File([blob], 'avatar.png', { type: 'image/png' })
+    avatarFileList.value = [{ raw: f, name: 'avatar.png' }]
+    previewUrl.value = URL.createObjectURL(blob)
+    showCrop.value = false
+    ElMessage.success('头像已裁切')
+  }, 'image/png')
+}
+
+const onCropClosed = () => {
+  if (cropImg.value) URL.revokeObjectURL(cropImg.value)
+  cropImg.value = ''
+  if (!previewUrl.value) avatarFileList.value = []
+}
+
 
 const doSave = async () => {
   saving.value = true
@@ -137,9 +180,13 @@ const doSave = async () => {
     if (form.oldPassword) payload.oldPassword = form.oldPassword
     if (form.newPassword) payload.newPassword = form.newPassword
 
-    if (fileToUpload.value) {
-      const res = await uploadFileApi(fileToUpload.value, 'AVATAR')
-      payload.fileID = res.data
+    if (avatarFileList.value.length > 0) {
+      const f = avatarFileList.value[0]?.raw
+      if (f) {
+        const res = await uploadFileApi(f, 'AVATAR')
+        const fid = res.data
+        if (fid) payload.fileID = fid
+      }
     }
 
     await updateMyInfoApi(payload)
@@ -234,9 +281,12 @@ onMounted(loadProfile)
   box-shadow: var(--shadow-md);
 }
 
-.avatar-uploader {
+.avatar-input {
   position: absolute;
   inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
 }
 
 .avatar-overlay {
@@ -348,4 +398,8 @@ onMounted(loadProfile)
   }
   .profile-form { padding: 8px 16px 20px; }
 }
+/* Crop Dialog */
+.crop-wrapper { width: 100%; height: 320px; }
+.crop-cropper { width: 100%; height: 100%; background: #f0f0f0; }
+
 </style>

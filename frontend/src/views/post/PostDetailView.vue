@@ -55,21 +55,23 @@
 
       <!-- Actions -->
       <div class="detail-actions">
-        <button class="action-btn edit-btn" v-if="isOwner" @click="openEditDialog">
-          <el-icon><EditPen /></el-icon>
-          <span>编辑</span>
-        </button>
-        <button class="action-btn delete-btn" v-if="isOwner" @click="doDeletePost">
-          <el-icon><Delete /></el-icon>
-          <span>删除</span>
-        </button>
-        <button class="action-btn like-btn" :class="{ liked: isLiked }" @click="toggleLike">
-          <el-icon><Star /></el-icon>
-          <span>点赞 {{ post.likeCount || 0 }}</span>
-        </button>
         <div class="action-stat">
           <el-icon><ChatDotSquare /></el-icon>
-          <span>评论 {{ comments.length > 0 ? totalComments : 0 }}</span>
+          <span>已有{{ totalComments }}条评论，快来抢占楼层吧</span>
+        </div>
+        <div class="action-right">
+          <button class="action-btn edit-btn" v-if="isOwner" @click="openEditDialog">
+            <el-icon><EditPen /></el-icon>
+            <span>编辑</span>
+          </button>
+          <button class="action-btn delete-btn" v-if="isOwner" @click="doDeletePost">
+            <el-icon><Delete /></el-icon>
+            <span>删除</span>
+          </button>
+          <button class="action-btn like-btn" :class="{ liked: isLiked }" @click="toggleLike">
+            <el-icon><Star /></el-icon>
+            <span>点赞 {{ post.likeCount || 0 }}</span>
+          </button>
         </div>
       </div>
 
@@ -139,6 +141,10 @@
             <div class="comment-actions">
               <span class="comment-action" @click="startReply(comment)">回复</span>
               <span v-if="isMyComment(comment)" class="comment-action delete-action" @click="deleteComment(comment.id)">删除</span>
+              <span class="comment-action comment-like-action" :class="{ liked: commentLikeState.has(comment.id) }" @click="toggleCommentLike(comment)">
+                <el-icon :size="13"><Star /></el-icon>
+                <span>{{ comment.likeCount || 0 }}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -207,14 +213,14 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, ArrowRight, EditPen, Delete, Star, ChatDotSquare, Close, Plus, Promotion } from '@element-plus/icons-vue'
 import { PostDetailApi, UpdatePostApi, DeletePostApi } from '@/api/post'
 import { commentPageApi, commentCreateApi, commentDeleteApi } from '@/api/comment'
 import { uploadFileApi } from '@/api/file'
-import { likePostApi, unlikePostApi, checkLikeApi } from '@/api/like'
+import { doLikeApi, undoLikeApi, likePostApi, unlikePostApi, checkLikeApi } from '@/api/like'
 
 const route = useRoute()
 const router = useRouter()
@@ -235,16 +241,17 @@ const showEditDialog = ref(false)
 const editLoading = ref(false)
 const editForm = ref({ title: '', content: '' })
 const isLiked = ref(false)
+const commentLikeState = ref(new Set())
 const editFileList = ref([])
 
 const isOwner = computed(() => {
-  const uid = localStorage.getItem('userId')
+  const uid = sessionStorage.getItem('userId')
   const postUserId = post.value.userId ? String(post.value.userId) : ''
   return uid && uid === postUserId
 })
 
 const isMyComment = (comment) => {
-  const uid = localStorage.getItem('userId')
+  const uid = sessionStorage.getItem('userId')
   const commentUserId = comment.userId ? String(comment.userId) : ''
   return uid && uid === commentUserId
 }
@@ -259,7 +266,7 @@ const loadPost = async () => {
     post.value = res.data || {}
     await loadComments(true)
     try {
-      const likeRes = await checkLikeApi({ targetType: 1, targetId: Number(id) })
+      const likeRes = await checkLikeApi({ targetType: 'POST', targetId: Number(id) })
       isLiked.value = likeRes.data || false
     } catch (e) { /* ignore */ }
   } catch (e) {
@@ -364,15 +371,32 @@ const deleteComment = async (id) => {
 const toggleLike = async () => {
   try {
     if (isLiked.value) {
-      await unlikePostApi({ targetType: 1, targetId: post.value.id })
+      await unlikePostApi({ targetType: 'POST', targetId: post.value.id })
       isLiked.value = false
       post.value.likeCount = Math.max(0, (post.value.likeCount || 1) - 1)
       ElMessage.success('已取消点赞')
     } else {
-      await likePostApi({ targetType: 1, targetId: post.value.id })
+      await likePostApi({ targetType: 'POST', targetId: post.value.id })
       isLiked.value = true
       post.value.likeCount = (post.value.likeCount || 0) + 1
       ElMessage.success('点赞成功')
+    }
+  } catch (e) {
+    ElMessage.error(e.message || '操作失败')
+  }
+}
+
+const toggleCommentLike = async (comment) => {
+  try {
+    const liked = commentLikeState.value.has(comment.id)
+    if (liked) {
+      await undoLikeApi({ targetType: 'COMMENT', targetId: comment.id })
+      commentLikeState.value.delete(comment.id)
+      comment.likeCount = Math.max(0, (comment.likeCount || 1) - 1)
+    } else {
+      await doLikeApi({ targetType: 'COMMENT', targetId: comment.id })
+      commentLikeState.value.add(comment.id)
+      comment.likeCount = (comment.likeCount || 0) + 1
     }
   } catch (e) {
     ElMessage.error(e.message || '操作失败')
@@ -576,11 +600,16 @@ watch(() => route.params.id, loadPost)
 .detail-actions {
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: space-between;
   padding: 16px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
+}
+.action-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .action-btn {
   display: flex;
@@ -681,6 +710,8 @@ watch(() => route.params.id, loadPost)
 }
 .comment-action:hover { color: var(--primary); }
 .delete-action:hover { color: #E74C3C; }
+.comment-like-action { display: inline-flex; align-items: center; gap: 3px; }
+.comment-like-action.liked { color: var(--primary); }
 
 .load-more-comments {
   text-align: center;

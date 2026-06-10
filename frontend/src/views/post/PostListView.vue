@@ -66,7 +66,7 @@
             <div class="card-meta">
               <span class="card-author">@{{ post.username }}</span>
               <span class="card-likes">
-                <el-icon :size="14"><Goods /></el-icon>
+                <el-icon :size="14"><Star /></el-icon>
                 {{ post.likeCount || 0 }}
               </span>
             </div>
@@ -121,7 +121,7 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { PostListApi, MyPostListApi, CreatePostApi } from '../../api/post'
 import { uploadFileApi } from '../../api/file'
-import { Picture, Goods, Loading, Plus, Search } from '@element-plus/icons-vue'
+import { Picture, Star, Loading, Plus, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useAuth } from '../../composables/useAuth'
 

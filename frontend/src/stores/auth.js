@@ -13,9 +13,9 @@ export const useAuthStore = defineStore('auth', {
      */
     state: () => ({
         // token 状态：存储用户认证令牌
-        token: localStorage.getItem('token') || '',
+        token: sessionStorage.getItem('token') || '',
         // user 状态：存储用户信息
-        userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null')
+        userInfo: JSON.parse(sessionStorage.getItem('userInfo') || 'null')
     }),
 
 
@@ -38,20 +38,20 @@ export const useAuthStore = defineStore('auth', {
         setLogin(token, userInfo){
             this.token = token
             this.userInfo = userInfo
-            localStorage.setItem('token', token)
-            localStorage.setItem('userInfo', JSON.stringify(userInfo))
+            sessionStorage.setItem('token', token)
+            sessionStorage.setItem('userInfo', JSON.stringify(userInfo))
         },
 
         setToken(token){
             this.token = token
-            localStorage.setItem('token', token)
+            sessionStorage.setItem('token', token)
         },
 
         clearToken(){
             this.token = ''
            this.userInfo = null
-            localStorage.removeItem('token')
-            localStorage.removeItem('userInfo')
+            sessionStorage.removeItem('token')
+            sessionStorage.removeItem('userInfo')
         }
     }
 })
