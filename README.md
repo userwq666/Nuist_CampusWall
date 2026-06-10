@@ -11,7 +11,7 @@
 
 ## 2. 功能完成度
 
-### 2.1 用��端（前端 + 后端）
+### 2.1 前端 + 后端
 | 模块 | 后端接口 | 前端页面 | 状态 |
 |------|---------|---------|------|
 | 账户注册/登录 | `POST /api/account/register` `POST /api/account/login` | `LoginView` `RegisterView` | ✅ |
